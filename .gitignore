@@ -1,0 +1,60 @@
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+[Oo]bj/
+[Ii]nt/
+
+# Visual Studio 2019 directory
+.vs/
+.vscode/
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings
+
+# Visual Studio IntelliSense
+.vscode/
+*.vscode/
+
+# Visual Studio Code workspace settings
+.vscode/settings.json
+
+# References directory
+*_i.c
+*_p.c
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CMakeSettings.json
+CTestTestfile.cmake
