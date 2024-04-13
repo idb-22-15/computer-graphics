@@ -16,6 +16,7 @@
           freeglut
           xorg.libX11
           xorg.libXrandr
+          bear
         ];
         shellHook = "echo term4-lab1";
       };
