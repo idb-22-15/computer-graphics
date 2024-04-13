@@ -17,6 +17,7 @@
           xorg.libX11
           xorg.libXrandr
           bear
+          clang
         ];
         shellHook = "echo term4-lab1";
       };

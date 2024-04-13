@@ -1,0 +1,15 @@
+[
+  {
+    "arguments": [
+      "/nix/store/ac1hb5dc2z4biwgy8mjrhlifffkkrvdq-gcc-wrapper-13.2.0/bin/g++",
+      "-c",
+      "-std=c++2a",
+      "-o",
+      "main",
+      "main1.cpp"
+    ],
+    "directory": "/home/art/i/uni/projects/computer-graphics/test",
+    "file": "/home/art/i/uni/projects/computer-graphics/test/main1.cpp",
+    "output": "/home/art/i/uni/projects/computer-graphics/test/main"
+  }
+]
