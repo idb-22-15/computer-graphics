@@ -1,6 +1,9 @@
-with import <nixpkgs> { };
+{ pkgs ? import <nixpkgs> { } }:
 
-stdenv.mkDerivation {
+with pkgs;
+
+mkShell {
   name = "term4-lab1";
-  buildInputs = [ glfw xorg.libX11 xorg.libXrandr ];
+  buildInputs = [ libGL libGLU freeglut xorg.libX11 xorg.libXrandr ];
+  shellHook = "echo term4-lab1";
 }
