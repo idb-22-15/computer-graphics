@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/gl.h>
 #include <vector>
 #include <algorithm>
 #include <iterator>

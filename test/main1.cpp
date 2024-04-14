@@ -1,11 +1,4 @@
 #include <GL/freeglut.h>
-
-#include <vector>
-#include <algorithm>
-#include <iterator>
-#include <cmath>
-#include <numeric>
-#include <numbers>
 #include <iostream>
 
 #include "render.cpp"
@@ -45,14 +38,14 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    // gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 
     // Apply rotation
     glRotatef(rotationAngleX, 1.0, 0.0, 0.0);
     glRotatef(rotationAngleY, 0.0, 1.0, 0.0);
 
-    // Apply scaling
+    // // Apply scaling
     glScalef(scale, scale, scale);
 
    
