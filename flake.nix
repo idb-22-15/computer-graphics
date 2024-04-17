@@ -15,6 +15,8 @@
           libGLU
           freeglut
           glfw
+          glm
+          glew
           xorg.libX11
           xorg.libXrandr
           bear
