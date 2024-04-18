@@ -4,7 +4,7 @@
 #include "render.cpp"
 
 int lastMouseX, lastMouseY;
-int rotationAngleX = 0;
+int rotationAngleX = -90;
 int rotationAngleY = 0;
 float scale = 0.1;
 float cameraX = 0.0, cameraY = 0.0, cameraZ = 5.0;
@@ -38,7 +38,7 @@ void display() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
 
-  gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+  // gluLookAt(cameraX, cameraY, cameraZ, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
   // Apply rotation
   glRotated(rotationAngleX, 1, 0, 0);
