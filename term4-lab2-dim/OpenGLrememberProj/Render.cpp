@@ -214,7 +214,7 @@ void initRender(OpenGL *ogl) {
   int cnt;
   // unsigned char* texCharArray = stbi_load("uv1024.jpg", &texW, &texH, &cnt,
   // 0);
-  OpenGL::LoadBMP("uv2048.bmp", &texW, &texH, &texarray);
+  OpenGL::LoadBMP("tex2.bmp", &texW, &texH, &texarray);
   OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
 
   // ���������� �� ��� ��������
@@ -512,23 +512,6 @@ void Render(OpenGL *ogl) {
   vs_h[6].draw();
   texs_h[7].tex(cell, texW, texH);
   vs_h[7].draw();
-
-  // texs[2].tex(cell);
-  // texs[3].tex(cell);
-  // texs[4].tex(cell);
-
-  // texs[2].tex(cell);
-  // texs[4].tex(cell);
-  // texs[5].tex(cell);
-
-  // texs[2].tex(cell);
-  // texs[5].tex(cell);
-  // texs[7].tex(cell);
-
-  // texs[5].tex(cell);
-  // texs[6].tex(cell);
-  // texs[7].tex(cell);
-
   glEnd();
 
   // walls
@@ -546,8 +529,8 @@ void Render(OpenGL *ogl) {
   glEnd();
 
   // circle
-  vec3 color_cover_green = rgb_to_normal(vec3(22, 224, 0));
-  vec3 color_wall_green = rgb_to_normal(vec3(23, 161, 8));
+  vec3 color_cover_green = rgb_to_normal(vec3(165, 214, 167));
+  vec3 color_wall_green = rgb_to_normal(vec3(197, 225, 165));
   vec3 line = vec3((vs[1][0] - vs[0][0]), (vs[1][1] - vs[0][1]), 0);
   vec3 center = vec3((vs[1][0] + vs[0][0]) / 2., (vs[1][1] + vs[0][1]) / 2., 0);
   double radius =
@@ -565,6 +548,7 @@ void Render(OpenGL *ogl) {
   color_cover_green.colorize();
   center.draw();
   for (vec3 &v : circle) {
+    v.tex(cell, texW, texH);
     v.draw();
   }
   glEnd();
@@ -581,6 +565,7 @@ void Render(OpenGL *ogl) {
   color_cover_green.colorize();
   center_h.draw();
   for (vec3 &v : circle_h) {
+      v.tex(cell, texW, texH);
     v.draw();
   }
   glEnd();
