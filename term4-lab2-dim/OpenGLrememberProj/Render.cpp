@@ -1,3 +1,5 @@
+#include <windows.h>
+
 #include "Render.h"
 
 #include <iostream>
@@ -5,7 +7,6 @@
 
 #include <GL\GL.h>
 #include <GL\GLU.h>
-#include <windows.h>
 
 #include "MyOGL.h"
 
@@ -15,27 +16,29 @@
 
 #include "GUItextRectangle.h"
 
+#include "stb_image.h"
+
 bool textureMode = true;
 bool lightMode = true;
 
-//    
+// класс для настройки камеры
 class CustomCamera : public Camera {
 public:
-  //  
+  // дистанция камеры
   double camDist;
-  //   
+  // углы поворота камеры
   double fi1, fi2;
 
-  //    
+  // значния масеры по умолчанию
   CustomCamera() {
     camDist = 15;
     fi1 = 1;
     fi2 = 1;
   }
 
-  //   ,    ,  
+  // считает позицию камеры, исходя из углов поворота, вызывается движком
   void SetUpCamera() {
-    //     
+    // отвечает за поворот камеры мышкой
     lookPoint.setCoords(0, 0, 0);
 
     pos.setCoords(camDist * cos(fi2) * cos(fi1), camDist * cos(fi2) * sin(fi1),
@@ -50,22 +53,22 @@ public:
   }
 
   void CustomCamera::LookAt() {
-    //   
+    // функция настройки камеры
     gluLookAt(pos.X(), pos.Y(), pos.Z(), lookPoint.X(), lookPoint.Y(),
               lookPoint.Z(), normal.X(), normal.Y(), normal.Z());
   }
 
-} camera; //   
+} camera; // создаем объект камеры
 
-//    
+// Класс для настройки света
 class CustomLight : public Light {
 public:
   CustomLight() {
-    //   
+    // начальная позиция света
     pos = Vector3(1, 1, 3);
   }
 
-  //       ,  
+  // рисует сферу и линии под источником света, вызывается движком
   void DrawLightGhismo() {
     glDisable(GL_LIGHTING);
 
@@ -77,13 +80,13 @@ public:
 
     if (OpenGL::isKeyPressed('G')) {
       glColor3d(0, 0, 0);
-      //      
+      // линия от источника света до окружности
       glBegin(GL_LINES);
       glVertex3d(pos.X(), pos.Y(), pos.Z());
       glVertex3d(pos.X(), pos.Y(), 0);
       glEnd();
 
-      //  
+      // рисуем окруность
       Circle c;
       c.pos.setCoords(pos.X(), pos.Y(), 0);
       c.scale = c.scale * 1.5;
@@ -97,22 +100,22 @@ public:
     GLfloat spec[] = {.7, .7, .7, 0};
     GLfloat position[] = {pos.X(), pos.Y(), pos.Z(), 1.};
 
-    //   
+    // параметры источника света
     glLightfv(GL_LIGHT0, GL_POSITION, position);
-    //   
-    //   ( )
+    // характеристики излучаемого света
+    // фоновое освещение (рассеянный свет)
     glLightfv(GL_LIGHT0, GL_AMBIENT, amb);
-    //   
+    // диффузная составляющая света
     glLightfv(GL_LIGHT0, GL_DIFFUSE, dif);
-    //    
+    // зеркально отражаемая составляющая света
     glLightfv(GL_LIGHT0, GL_SPECULAR, spec);
 
     glEnable(GL_LIGHT0);
   }
 
-} light; //   
+} light; // создаем источник света
 
-//   
+// старые координаты мыши
 int mouseX = 0, mouseY = 0;
 
 void mouseEvent(OpenGL *ogl, int mX, int mY) {
@@ -121,13 +124,13 @@ void mouseEvent(OpenGL *ogl, int mX, int mY) {
   mouseX = mX;
   mouseY = mY;
 
-  //        
+  // меняем углы камеры при нажатой левой кнопке мыши
   if (OpenGL::isKeyPressed(VK_RBUTTON)) {
     camera.fi1 += 0.01 * dx;
     camera.fi2 += -0.01 * dy;
   }
 
-  //    ,    
+  // двигаем свет по плоскости, в точку где мышь
   if (OpenGL::isKeyPressed('G') && !OpenGL::isKeyPressed(VK_LBUTTON)) {
     LPPOINT POINT = new tagPOINT();
     GetCursorPos(POINT);
@@ -190,69 +193,70 @@ void keyDownEvent(OpenGL *ogl, int key) {
 void keyUpEvent(OpenGL *ogl, int key) {}
 
 GLuint texId;
-
-//    
+int texW, texH;
+// выполняется перед первым рендером
 void initRender(OpenGL *ogl) {
-  //  
+  // настройка текстур
 
-  // 4    
+  // 4 байта на хранение пикселя
   glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
-  //    
+  // настройка режима наложения текстур
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-  //  
+  // включаем текстуры
   glEnable(GL_TEXTURE_2D);
 
-  //     (R G B)
+  // массив трехбайтных элементов  (R G B)
   RGBTRIPLE *texarray;
 
-  //  , (**4      4,    ,  
-  //   4     - R G B A)
-  char *texCharArray;
-  int texW, texH;
+  // массив символов, (высота*ширина*4      4, потомучто   выше, мы указали
+  // использовать по 4 байта на пиксель текстуры - R G B A)
+  //char *texCharArray;
+  int cnt;
+  unsigned char* texCharArray = stbi_load("uv1024.jpg", &texW, &texH, &cnt, 0);
+  //OpenGL::LoadBMP("texture.bmp", &texW, &texH, &texarray);
+  //OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
 
-  OpenGL::LoadBMP("texture.bmp", &texW, &texH, &texarray);
-  OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
-
-  //    
+  // генерируем ИД для текстуры
   glGenTextures(1, &texId);
-  //  ,      ,  
-  //   
+  // биндим айдишник, все что будет происходить с текстурой, будте происходить
+  // по этому ИД
   glBindTexture(GL_TEXTURE_2D, texId);
 
-  //    ,        
+  // загружаем текстуру в видеопямять, в оперативке нам больше  она не нужна
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texW, texH, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, texCharArray);
 
-  //  
-  free(texCharArray);
+  // отчистка памяти
+  stbi_image_free(texCharArray);
+  //free(texCharArray);
   free(texarray);
 
-  //  
+  // наводим шмон
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-  //      ""
+  // камеру и свет привязываем к "движку"
   ogl->mainCamera = &camera;
   ogl->mainLight = &light;
 
-  //   :     1
+  // нормализация нормалей : их длины будет равна 1
   glEnable(GL_NORMALIZE);
 
-  //    
+  // устранение ступенчатости для линий
   glEnable(GL_LINE_SMOOTH);
 
-  //     
-  //   GL_LIGHT_MODEL_TWO_SIDE -
-  //                0 -      ( ),
-  //                1 -      
-  //                     .
-  //   GL_LIGHT_MODEL_AMBIENT -   ,
-  //                   
-  //   (0.2, 0.2, 0.2, 1.0)
+  //   задать параметры освещения
+  //  параметр GL_LIGHT_MODEL_TWO_SIDE -
+  //                0 -  лицевые и изнаночные рисуются одинаково(по умолчанию),
+  //                1 - лицевые и изнаночные обрабатываются разными режимами
+  //                соответственно лицевым и изнаночным свойствам материалов.
+  //  параметр GL_LIGHT_MODEL_AMBIENT - задать фоновое освещение,
+  //                не зависящее от сточников
+  // по умолчанию (0.2, 0.2, 0.2, 1.0)
 
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
 
@@ -260,7 +264,6 @@ void initRender(OpenGL *ogl) {
   camera.fi2 = 0.8;
 }
 
-// ===================================================================================
 const double pi = 3.1415;
 
 struct vec3 {
@@ -280,8 +283,33 @@ struct vec3 {
   const double &operator[](int index) const { return data[index]; }
   void draw() { glVertex3dv(data); }
   void colorize() { glColor3dv(data); }
-  double *raw() { return data; }
+  void tex(double scale, double teW, double texH) {
+    vec3 v = {(data[0] * scale) / texW, (texH - data[1] * scale) / texH,
+              data[2]};
+    glTexCoord3dv(v.data);
+  }
+  double len() {
+    return std::sqrt(data[0] * data[0] + data[1] * data[1] + data[2] * data[2]);
+  }
+  vec3 normalize() {
+    double l = len();
+    return vec3(data[0] / l, data[1] / l, data[2] / l);
+  }
 };
+
+vec3 normal_to_triangle(const vec3 &v1, const vec3 &v2, const vec3 &v3) {
+  // Вычисляем векторы, образованные двумя сторонами треугольника
+  vec3 edge1 = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
+  vec3 edge2 = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
+
+  // Находим нормаль как векторное произведение этих двух сторон
+  vec3 normal = {edge1[1] * edge2[2] - edge1[2] * edge2[1],
+                 edge1[2] * edge2[0] - edge1[0] * edge2[2],
+                 edge1[0] * edge2[1] - edge1[1] * edge2[0]};
+
+  // Нормализуем нормаль, чтобы получить единичный вектор
+  return normal.normalize();
+}
 
 vec3 rgb_to_normal(vec3 rgb) {
   return vec3(rgb[0] / 255., rgb[1] / 255., rgb[2] / 255.);
@@ -311,10 +339,9 @@ double get_angle_in_rad(vec3 start, vec3 end) {
 double normalize_angle_in_rad(double angle) {
   return (2 * pi + angle) / (2 * pi);
 }
-// ==========================================================================
 
 void Render(OpenGL *ogl) {
-
+  const int cell = 5; // px
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_LIGHTING);
 
@@ -325,27 +352,28 @@ void Render(OpenGL *ogl) {
   if (lightMode)
     glEnable(GL_LIGHTING);
 
-  // 
+  // альфаналожение
   // glEnable(GL_BLEND);
   // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  //  
+  // настройка материала
   GLfloat amb[] = {0.2, 0.2, 0.1, 1.};
   GLfloat dif[] = {0.4, 0.65, 0.5, 1.};
   GLfloat spec[] = {0.9, 0.8, 0.3, 1.};
   GLfloat sh = 0.1f * 256;
 
-  // 
+  // фоновая
   glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
-  // 
+  // дифузная
   glMaterialfv(GL_FRONT, GL_DIFFUSE, dif);
-  // 
-  glMaterialfv(GL_FRONT, GL_SPECULAR, spec); //  
+  // зеркальная
+  glMaterialfv(GL_FRONT, GL_SPECULAR, spec); // размер блика
   glMaterialf(GL_FRONT, GL_SHININESS, sh);
 
-  //   ,   ( )
+  // чтоб было красиво, без квадратиков (сглаживание освещения)
   glShadeModel(GL_SMOOTH);
-  //  
+
+  // Прогать тут
   //================================================================================
   std::vector<vec3> vs = {
       {2, 3, 0},   // 0 green
@@ -358,19 +386,38 @@ void Render(OpenGL *ogl) {
       {9, 8, 0},   // 7
   };
 
+  std::vector<vec3> texs = {
+      {5, 15, 0},  // 0
+      {3, 11, 0},  // 1
+      {3, 11, 0},  // 2
+      {9, 9, 0},   // 3
+      {9, 4, 0},   // 4
+      {15, 5, 0},  // 5
+      {13, 10, 0}, // 6
+      {17, 14, 0}  // 7
+  };
+
   const double h = 3;
   std::vector<vec3> vs_h = {};
+  std::vector<vec3> texs_h = {};
+
   for (vec3 &v : vs) {
     vs_h.push_back(vec3(v[0], v[1], h));
   }
+  for (vec3 &v : vs) {
+    texs_h.push_back((vec3(v[0], v[1], h)));
+  }
 
+  vec3 color_white = rgb_to_normal(vec3(255, 255, 255));
   vec3 color_cover = rgb_to_normal(vec3(200, 200, 200));
   vec3 color_wall = rgb_to_normal(vec3(100, 100, 100));
-
+  vec3 normal_top = vec3(0, 0, 1);
+  vec3 normal_bottom = vec3(0, 0, -1);
+  color_white.colorize();
   // bottom
-  color_cover.colorize();
-
+  // color_cover.colorize();
   glBegin(GL_TRIANGLES);
+  glNormal3dv(normal_bottom.data);
   vs[0].draw();
   vs[1].draw();
   vs[2].draw();
@@ -397,17 +444,31 @@ void Render(OpenGL *ogl) {
   glEnd();
 
   // top
-
   glBegin(GL_TRIANGLES);
+  glNormal3dv(normal_top.data);
+  // glBindTexture(GL_TEXTURE_2D, texId);
+  // texs[0].tex(cell);
+  // vs_h[0].draw();
+  // texs[1].tex(cell);
+  // vs_h[1].draw();
+  // texs[2].tex(cell);
+  // vs_h[2].draw();
+
+  vec3(5, 5, 0).tex(cell, texW, texH);
   vs_h[0].draw();
+  vec3(0, 5, 0).tex(cell, texW, texH);
   vs_h[1].draw();
+  vec3(5, 0, 0).tex(cell, texW, texH);
   vs_h[2].draw();
+  glEnd();
 
-  vs_h[0].draw();
-  vs_h[2].draw();
-  vs_h[7].draw();
-
-  vs_h[2].draw();
+  // texs[0].tex(cell);
+  // vs_h[0].draw();
+  // texs[2].tex(cell);
+  // vs_h[2].draw();
+  // texs[7].tex(cell);
+  // vs_h[7].draw();
+  /*vs_h[2].draw();
   vs_h[3].draw();
   vs_h[4].draw();
 
@@ -421,13 +482,32 @@ void Render(OpenGL *ogl) {
 
   vs_h[5].draw();
   vs_h[6].draw();
-  vs_h[7].draw();
+  vs_h[7].draw();*/
+
+  // texs[2].tex(cell);
+  // texs[3].tex(cell);
+  // texs[4].tex(cell);
+
+  // texs[2].tex(cell);
+  // texs[4].tex(cell);
+  // texs[5].tex(cell);
+
+  // texs[2].tex(cell);
+  // texs[5].tex(cell);
+  // texs[7].tex(cell);
+
+  // texs[5].tex(cell);
+  // texs[6].tex(cell);
+  // texs[7].tex(cell);
+
   glEnd();
 
   // walls
-  color_wall.colorize();
   glBegin(GL_QUADS);
+  color_wall.colorize();
   for (int i = 0; i < vs.size(); i++) {
+    vec3 normal = normal_to_triangle(vs[i], vs[(i + i) / vs.size()], vs_h[i]);
+    glNormal3dv(normal.data);
     vs[i].draw();
     vs[(i + 1) % vs.size()].draw();
     vs_h[(i + 1) % vs.size()].draw();
@@ -442,13 +522,16 @@ void Render(OpenGL *ogl) {
   vec3 center = vec3((vs[1][0] + vs[0][0]) / 2., (vs[1][1] + vs[0][1]) / 2., 0);
   double radius =
       std::sqrt(std::pow(line[0] / 2., 2) + std::pow(line[1] / 2., 2));
+  double start_angle_in_grad = 71.85;
+  double end_angle_in_grad = -78.65;
   double start_angle = 1.7;
   double end_angle = start_angle + pi + 0.1;
   std::vector<vec3> circle =
       make_circle(center, radius, start_angle, end_angle);
 
-  // bottom
+  // circle bottom
   glBegin(GL_TRIANGLE_FAN);
+  glNormal3dv(normal_bottom.data);
   color_cover_green.colorize();
   center.draw();
   for (vec3 &v : circle) {
@@ -456,7 +539,7 @@ void Render(OpenGL *ogl) {
   }
   glEnd();
 
-  // top
+  // circle top
   vec3 center_h = vec3(center[0], center[1], h);
   std::vector<vec3> circle_h = {};
   for (vec3 &v : circle) {
@@ -464,67 +547,71 @@ void Render(OpenGL *ogl) {
   }
 
   glBegin(GL_TRIANGLE_FAN);
+  glNormal3dv(normal_top.data);
+  color_cover_green.colorize();
   center_h.draw();
   for (vec3 &v : circle_h) {
     v.draw();
   }
   glEnd();
 
-  // wall
+  // circle wall
   glBegin(GL_QUADS);
   color_wall_green.colorize();
   int circle_dots = circle.size();
   for (int i = 0; i < circle_dots; i++) {
+    vec3 normal = normal_to_triangle(circle[i], circle[(i + i) / circle_dots],
+                                     circle_h[i]);
+    glNormal3dv(normal.data);
     circle[i].draw();
     circle[(i + 1) % circle_dots].draw();
     circle_h[(i + 1) % circle_dots].draw();
     circle_h[i].draw();
   }
   glEnd();
-  //    
 
   // ================================================================================
-  //   
+  // Сообщение вверху экрана
 
   glMatrixMode(
-      GL_PROJECTION); //    .
-                      //(  ,   .)
-  glPushMatrix(); //     ( 
-                  //  )  
-  glLoadIdentity(); //   
+      GL_PROJECTION); // Делаем активной матрицу проекций.
+                      //(всек матричные операции, будут ее видоизменять.)
+  glPushMatrix(); // сохраняем текущую матрицу проецирования (которая описывает
+                  // перспективную проекцию) в стек
+  glLoadIdentity(); // Загружаем единичную матрицу
   glOrtho(0, ogl->getWidth(), 0, ogl->getHeight(), 0,
-          1); //    
+          1); // врубаем режим ортогональной проекции
 
-  glMatrixMode(GL_MODELVIEW); //   - 
-  glPushMatrix(); //      ( ,
-                  // )
-  glLoadIdentity(); //    
+  glMatrixMode(GL_MODELVIEW); // переключаемся на модел-вью матрицу
+  glPushMatrix(); // сохраняем текущую матрицу в стек (положение камеры,
+                  // фактически)
+  glLoadIdentity(); // сбрасываем ее в дефолт
 
   glDisable(GL_LIGHTING);
 
   GuiTextRectangle
-      rec; //         .
+      rec; // классик моего авторства для удобной работы с рендером текста.
   rec.setSize(300, 150);
   rec.setPosition(10, ogl->getHeight() - 150 - 10);
 
   std::stringstream ss;
-  ss << "T - / " << std::endl;
-  ss << "L - / " << std::endl;
-  ss << "F -   " << std::endl;
-  ss << "G -    " << std::endl;
-  ss << "G+    " << std::endl;
-  ss << ". : (" << light.pos.X() << ", " << light.pos.Y() << ", "
+  ss << "T - вкл/выкл текстур" << std::endl;
+  ss << "L - вкл/выкл освещение" << std::endl;
+  ss << "F - Свет из камеры" << std::endl;
+  ss << "G - двигать свет по горизонтали" << std::endl;
+  ss << "G+ЛКМ двигать свет по вертекали" << std::endl;
+  ss << "Коорд. света: (" << light.pos.X() << ", " << light.pos.Y() << ", "
      << light.pos.Z() << ")" << std::endl;
-  ss << ". : (" << camera.pos.X() << ", " << camera.pos.Y() << ", "
+  ss << "Коорд. камеры: (" << camera.pos.X() << ", " << camera.pos.Y() << ", "
      << camera.pos.Z() << ")" << std::endl;
-  ss << " : R=" << camera.camDist << ", fi1=" << camera.fi1
+  ss << "Параметры камеры: R=" << camera.camDist << ", fi1=" << camera.fi1
      << ", fi2=" << camera.fi2 << std::endl;
 
   rec.setText(ss.str().c_str());
   rec.Draw();
 
-  glMatrixMode(GL_PROJECTION); //     -
-                               //   .
+  glMatrixMode(GL_PROJECTION); // восстанавливаем матрицы проекции и модел-вью
+                               // обратьно из стека.
   glPopMatrix();
 
   glMatrixMode(GL_MODELVIEW);
