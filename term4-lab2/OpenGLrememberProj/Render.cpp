@@ -1,13 +1,12 @@
+#include <windows.h>
+
 #include "Render.h"
 
 #include <iostream>
 #include <sstream>
 
-
 #include <GL\GL.h>
 #include <GL\GLU.h>
-#include <windows.h>
-
 
 #include "MyOGL.h"
 
@@ -16,6 +15,13 @@
 #include "Primitives.h"
 
 #include "GUItextRectangle.h"
+
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <numbers>
+#include <numeric>
+#include <vector>
 
 bool textureMode = true;
 bool lightMode = true;
@@ -192,7 +198,7 @@ void keyDownEvent(OpenGL *ogl, int key) {
 void keyUpEvent(OpenGL *ogl, int key) {}
 
 GLuint texId;
-
+int texW, texH;
 // выполняется перед первым рендером
 void initRender(OpenGL *ogl) {
   // настройка текстур
@@ -212,7 +218,7 @@ void initRender(OpenGL *ogl) {
   // массив символов, (высота*ширина*4      4, потомучто   выше, мы указали
   // использовать по 4 байта на пиксель текстуры - R G B A)
   char *texCharArray;
-  int texW, texH;
+
   OpenGL::LoadBMP("texture.bmp", &texW, &texH, &texarray);
   OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
 
@@ -261,6 +267,231 @@ void initRender(OpenGL *ogl) {
   camera.fi2 = 0.8;
 }
 
+// !======================================================================
+
+const double pi = 3.1415;
+
+struct Vertex {
+  double x;
+  double y;
+  double z;
+  Vertex(){};
+  Vertex(double x, double y, double z) : x(x), y(y), z(z){};
+
+  double len() { return std::sqrt(x * x + y * y + z * z); }
+
+  Vertex toRGB() { return Vertex(x / 255., y / 255., z / 255.); }
+
+  Vertex toNormalized() {
+    double l = len();
+    return Vertex(x / l, y / l, z / l);
+  }
+  void colorize() { glColor3d(x, y, z); }
+
+  void draw() { glVertex3d(x, y, z); }
+
+  void tex(double scale, double w, double h) {
+    glTexCoord3d(x * scale / w, y * scale / h, z);
+  }
+
+  Vertex operator+(const Vertex &other) {
+    return Vertex(x + other.x, y + other.y, z + other.z);
+  }
+
+  Vertex operator-(const Vertex &other) {
+    return Vertex(x - other.x, y - other.y, z - other.z);
+  }
+
+  Vertex operator*(double a) { return Vertex(x * a, y * a, z * a); }
+
+  Vertex operator/(double a) { return Vertex(x / a, y / a, z / a); }
+};
+
+struct Line {
+  Vertex start;
+  Vertex end;
+  Vertex mid;
+  double length;
+  Line(Vertex start, Vertex end) : start(start), end(end) {
+    mid = (start + end) / 2.;
+
+    Vertex v = start - end;
+    length = v.len();
+  }
+};
+
+Vertex fig_center(std::vector<Vertex> fig) {
+  Vertex sum =
+      std::accumulate(fig.begin(), fig.end(), Vertex(0, 0, 0),
+                      [](Vertex total, const Vertex &v) { return total + v; });
+  return sum / fig.size();
+}
+
+double deg_to_rad(double deg) { return deg / 180 * pi; }
+
+double get_angle_in_rad(Vertex start, Vertex end) {
+  Vertex v = start - end;
+  double angle_in_rad = std::atan2(v.y, v.x);
+  return angle_in_rad;
+}
+
+Vertex find_normal_of_line(Vertex start, Vertex end, double distance = 1) {
+  Vertex dv = end - start;
+  Line line = Line(start, end);
+  double nx = -dv.y / line.length; //   90 
+  double ny = dv.x / line.length;
+  Vertex n(nx, ny, start.z);
+
+  double normalX = line.mid.x + n.x * distance;
+  double normalY = line.mid.y + n.y * distance;
+
+  return Vertex(normalX, normalY, start.z);
+}
+
+const int circle_points = 100;
+
+struct MyCircle {
+  Vertex center;
+  double radius;
+  double start_angle;
+  double end_angle;
+  std::vector<Vertex> vs;
+  MyCircle(Vertex center, double radius, double start_angle, double end_angle)
+      : center(center), radius(radius), start_angle(start_angle),
+        end_angle(end_angle) {
+    for (int i = 0; i < circle_points + 1; i++) {
+      const double angle =
+          start_angle + (end_angle - start_angle) / circle_points * i;
+      Vertex v(center.x + cos(angle) * radius, center.y + sin(angle) * radius,
+               center.z);
+      vs.push_back(v);
+    }
+  }
+
+  void draw() {
+    for (auto &v : vs) {
+      v.draw();
+    }
+  }
+};
+
+Vertex normal_of_triangle(const Vertex &v1, const Vertex &v2,
+                          const Vertex &v3) {
+  Vertex b = {v2.x - v1.x, v2.y - v1.y, v2.z - v1.z};
+  Vertex a = {v3.x - v1.x, v3.y - v1.y, v3.z - v1.z};
+
+  Vertex normal = {a.y * b.z - b.y * a.z, -a.x * b.z + b.x * a.z,
+                   a.x * b.y - b.x * a.y};
+
+  return normal.toNormalized();
+}
+
+struct Cover {
+  std::vector<Vertex> vs;
+  Vertex normal;
+  Vertex color;
+  MyCircle *green_circle;
+  MyCircle *blue_circle;
+
+  Cover(double height, Vertex normal, Vertex color) {
+    vs = {
+        {10, 1, height},  // green
+        {6, 5, height},   //
+        {8, 9, height},   //
+        {2, 11, height},  //
+        {5, 16, height},  // blue
+        {13, 13, height}, // blue
+        {10, 9, height},  //
+        {15, 5, height}   // green
+    };
+    this->normal = normal;
+    this->color = color;
+    size_t rows = vs.size();
+
+    // green
+
+    Line green_line = Line(vs[0], vs[7]);
+    Vertex green_circle_center = green_line.mid;
+    double green_circle_radius = Line(green_circle_center, vs[0]).length;
+    double green_circle_start_angle =
+        get_angle_in_rad(vs[7], green_circle_center);
+    double green_circle_end_angle =
+        get_angle_in_rad(vs[0], green_circle_center);
+    green_circle =
+        new MyCircle(green_circle_center, green_circle_radius,
+                     green_circle_start_angle, green_circle_end_angle);
+
+    // blue
+    Line blue_line = Line(vs[4], vs[5]);
+    Vertex blue_mid = blue_line.mid;
+    Vertex blue_normal = find_normal_of_line(vs[4], vs[5]);
+    Vertex blue_circle_center = blue_normal;
+    double blue_circle_radius = Line(blue_circle_center, vs[4]).length;
+    double blue_circle_start_angle =
+        get_angle_in_rad(vs[4], blue_circle_center);
+    double blue_circle_end_angle =
+        get_angle_in_rad(vs[5], blue_circle_center) + 2 * pi;
+    blue_circle = new MyCircle(blue_circle_center, blue_circle_radius,
+                               blue_circle_start_angle, blue_circle_end_angle);
+  }
+  ~Cover() {
+    delete green_circle;
+    delete blue_circle;
+  }
+
+  void draw() {
+    glBegin(GL_TRIANGLE_FAN);
+    glNormal3d(normal.x, normal.y, normal.z);
+    color.colorize();
+    green_circle->center.draw();
+    green_circle->draw();
+    glEnd();
+
+    glBegin(GL_TRIANGLE_FAN);
+    vs[3].draw();
+    for (int i = 0; i <= circle_points / 2; i++) {
+      blue_circle->vs[i].draw();
+    }
+    glEnd();
+
+    glBegin(GL_TRIANGLE_FAN);
+    vs[2].draw();
+    for (int i = circle_points / 3; i <= circle_points / 3 * 2; i++) {
+      blue_circle->vs[i].draw();
+    }
+    glEnd();
+
+    glBegin(GL_TRIANGLE_FAN);
+    vs[6].draw();
+    for (int i = circle_points / 2; i <= circle_points; i++) {
+      blue_circle->vs[i].draw();
+    }
+    glEnd();
+
+    glBegin(GL_TRIANGLES);
+    vs[3].draw();
+    vs[2].draw();
+    blue_circle->vs[circle_points / 2].draw();
+
+    vs[2].draw();
+    vs[6].draw();
+    blue_circle->vs[circle_points / 2].draw();
+    glEnd();
+
+    //
+
+    glBegin(GL_POLYGON);
+    vs[0].draw();
+    vs[1].draw();
+    vs[2].draw();
+    vs[6].draw();
+    vs[7].draw();
+    glEnd();
+  }
+};
+
+// !============================================
+
 void Render(OpenGL *ogl) {
 
   glDisable(GL_TEXTURE_2D);
@@ -293,10 +524,71 @@ void Render(OpenGL *ogl) {
 
   // чтоб было красиво, без квадратиков (сглаживание освещения)
   glShadeModel(GL_SMOOTH);
-  //===================================
-  // Прогать тут
 
-  // =========================================
+  //!===================================
+  // Прогать тут
+  Vertex color_white = Vertex(255, 255, 255).toRGB();
+  color_white.colorize();
+  const double size = 20;
+
+  Vertex n = {0, 0, -1};
+  Vertex n_top = {0, 0, 1};
+
+  Cover cover(0, n, color_white);
+  Cover cover_top(2, n_top, color_white);
+
+  // covers
+  cover.draw();
+  cover_top.draw();
+
+  int len = cover.vs.size();
+
+  // walls
+  glBegin(GL_QUADS);
+  color_white.colorize();
+  for (int i = 0; i < len; i++) {
+    if (i == 4)
+      continue;
+
+    Vertex n = normal_of_triangle(cover.vs[i], cover.vs[(i + 1) % len],
+                                  cover_top.vs[i]);
+    glNormal3d(n.x, n.y, n.z);
+
+    cover.vs[i].draw();
+    cover.vs[(i + 1) % len].draw();
+    cover_top.vs[(i + 1) % len].draw();
+    cover_top.vs[i].draw();
+  }
+
+  // green circle wall
+  for (int i = 0; i < cover.green_circle->vs.size(); i++) {
+    Vertex n = normal_of_triangle(cover.green_circle->vs[i],
+                                  cover_top.green_circle->vs[i],
+                                  cover.green_circle->vs[(i + 1) % len]);
+    glNormal3d(n.x, n.y, n.z);
+
+    cover.green_circle->vs[i].draw();
+    cover.green_circle->vs[(i + 1) % len].draw();
+    cover_top.green_circle->vs[(i + 1) % len].draw();
+    cover_top.green_circle->vs[i].draw();
+  }
+  glEnd();
+
+  // blue circle wall
+  glBegin(GL_QUADS);
+  for (int i = 0; i < cover.blue_circle->vs.size() - 1; i++) {
+    Vertex n = normal_of_triangle(cover.blue_circle->vs[i],
+                                  cover_top.blue_circle->vs[i],
+                                  cover.blue_circle->vs[(i + 1) % len]);
+    glNormal3d(n.x, n.y, n.z);
+    cover.blue_circle->vs[i].draw();
+    cover.blue_circle->vs[i + 1].draw();
+    cover_top.blue_circle->vs[i + 1].draw();
+    cover_top.blue_circle->vs[i].draw();
+  }
+  glEnd();
+
+  // !=========================================
   // Сообщение вверху экрана
 
   glMatrixMode(

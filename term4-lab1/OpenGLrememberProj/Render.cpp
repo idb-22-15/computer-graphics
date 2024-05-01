@@ -71,9 +71,9 @@ Vertex fig_center(std::vector<Vertex> fig) {
 //	return circle;
 // }
 
-double to_rad(double deg) { return deg / 180 * pi; }
+double grad_to_rad(double deg) { return deg / 180 * pi; }
 
-double get_angle(Vertex start, Vertex end) {
+double get_angle_in_rad(Vertex start, Vertex end) {
   Vertex v = start - end;
   double angle_in_rad = std::atan2(v.y, v.x);
   return angle_in_rad;
