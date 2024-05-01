@@ -199,6 +199,8 @@ void keyUpEvent(OpenGL *ogl, int key) {}
 
 GLuint texId;
 int texW, texH;
+const double scale = 20;
+
 // выполняется перед первым рендером
 void initRender(OpenGL *ogl) {
   // настройка текстур
@@ -219,7 +221,7 @@ void initRender(OpenGL *ogl) {
   // использовать по 4 байта на пиксель текстуры - R G B A)
   char *texCharArray;
 
-  OpenGL::LoadBMP("texture.bmp", &texW, &texH, &texarray);
+  OpenGL::LoadBMP("tex2.bmp", &texW, &texH, &texarray);
   OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
 
   // генерируем ИД для текстуры
@@ -370,6 +372,7 @@ struct MyCircle {
 
   void draw() {
     for (auto &v : vs) {
+      v.tex(scale, texW, texH);
       v.draw();
     }
   }
@@ -443,48 +446,67 @@ struct Cover {
     glBegin(GL_TRIANGLE_FAN);
     glNormal3d(normal.x, normal.y, normal.z);
     color.colorize();
+    green_circle->center.tex(scale, texW, texH);
     green_circle->center.draw();
     green_circle->draw();
     glEnd();
 
     glBegin(GL_TRIANGLE_FAN);
+    vs[3].tex(scale, texW, texH);
     vs[3].draw();
     for (int i = 0; i <= circle_points / 2; i++) {
+      blue_circle->vs[i].tex(scale, texW, texH);
       blue_circle->vs[i].draw();
     }
     glEnd();
 
     glBegin(GL_TRIANGLE_FAN);
+    vs[2].tex(scale, texW, texH);
     vs[2].draw();
     for (int i = circle_points / 3; i <= circle_points / 3 * 2; i++) {
+      blue_circle->vs[i].tex(scale, texW, texH);
       blue_circle->vs[i].draw();
     }
     glEnd();
 
     glBegin(GL_TRIANGLE_FAN);
+    vs[6].tex(scale, texW, texH);
     vs[6].draw();
     for (int i = circle_points / 2; i <= circle_points; i++) {
+      blue_circle->vs[i].tex(scale, texW, texH);
+
       blue_circle->vs[i].draw();
     }
     glEnd();
 
     glBegin(GL_TRIANGLES);
+    vs[3].tex(scale, texW, texH);
     vs[3].draw();
+    vs[2].tex(scale, texW, texH);
     vs[2].draw();
+    blue_circle->vs[circle_points / 2].tex(scale, texW, texH);
     blue_circle->vs[circle_points / 2].draw();
 
+    vs[2].tex(scale, texW, texH);
     vs[2].draw();
+    vs[6].tex(scale, texW, texH);
     vs[6].draw();
+    blue_circle->vs[circle_points / 2].tex(scale, texW, texH);
     blue_circle->vs[circle_points / 2].draw();
     glEnd();
 
     //
 
     glBegin(GL_POLYGON);
+    vs[0].tex(scale, texW, texH);
     vs[0].draw();
+    vs[1].tex(scale, texW, texH);
     vs[1].draw();
+    vs[2].tex(scale, texW, texH);
     vs[2].draw();
+    vs[6].tex(scale, texW, texH);
     vs[6].draw();
+    vs[7].tex(scale, texW, texH);
     vs[7].draw();
     glEnd();
   }
@@ -493,7 +515,6 @@ struct Cover {
 // !============================================
 
 void Render(OpenGL *ogl) {
-
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_LIGHTING);
 
@@ -504,6 +525,7 @@ void Render(OpenGL *ogl) {
   if (lightMode)
     glEnable(GL_LIGHTING);
 
+  glBindTexture(GL_TEXTURE_2D, texId);
   // альфаналожение
   // glEnable(GL_BLEND);
   // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -529,7 +551,6 @@ void Render(OpenGL *ogl) {
   // Прогать тут
   Vertex color_white = Vertex(255, 255, 255).toRGB();
   color_white.colorize();
-  const double size = 20;
 
   Vertex n = {0, 0, -1};
   Vertex n_top = {0, 0, 1};
@@ -554,9 +575,13 @@ void Render(OpenGL *ogl) {
                                   cover_top.vs[i]);
     glNormal3d(n.x, n.y, n.z);
 
+    cover.vs[i].tex(scale, texW, texH);
     cover.vs[i].draw();
+    cover.vs[(i + 1) % len].tex(scale, texW, texH);
     cover.vs[(i + 1) % len].draw();
+    cover_top.vs[(i + 1) % len].tex(scale, texW, texH);
     cover_top.vs[(i + 1) % len].draw();
+    cover_top.vs[i].tex(scale, texW, texH);
     cover_top.vs[i].draw();
   }
 
@@ -567,9 +592,13 @@ void Render(OpenGL *ogl) {
                                   cover.green_circle->vs[(i + 1) % len]);
     glNormal3d(n.x, n.y, n.z);
 
+    cover.green_circle->vs[i].tex(scale, texW, texH);
     cover.green_circle->vs[i].draw();
+    cover.green_circle->vs[(i + 1) % len].tex(scale, texW, texH);
     cover.green_circle->vs[(i + 1) % len].draw();
+    cover_top.green_circle->vs[(i + 1) % len].tex(scale, texW, texH);
     cover_top.green_circle->vs[(i + 1) % len].draw();
+    cover_top.green_circle->vs[i].tex(scale, texW, texH);
     cover_top.green_circle->vs[i].draw();
   }
   glEnd();
@@ -581,9 +610,13 @@ void Render(OpenGL *ogl) {
                                   cover_top.blue_circle->vs[i],
                                   cover.blue_circle->vs[(i + 1) % len]);
     glNormal3d(n.x, n.y, n.z);
+    cover.blue_circle->vs[i].tex(scale, texW, texH);
     cover.blue_circle->vs[i].draw();
+    cover.blue_circle->vs[i + 1].tex(scale, texW, texH);
     cover.blue_circle->vs[i + 1].draw();
+    cover_top.blue_circle->vs[i + 1].tex(scale, texW, texH);
     cover_top.blue_circle->vs[i + 1].draw();
+    cover_top.blue_circle->vs[i].tex(scale, texW, texH);
     cover_top.blue_circle->vs[i].draw();
   }
   glEnd();
