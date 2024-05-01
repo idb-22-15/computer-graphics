@@ -214,7 +214,7 @@ void initRender(OpenGL *ogl) {
   int cnt;
   // unsigned char* texCharArray = stbi_load("uv1024.jpg", &texW, &texH, &cnt,
   // 0);
-  OpenGL::LoadBMP("tex.bmp", &texW, &texH, &texarray);
+  OpenGL::LoadBMP("uv2048.bmp", &texW, &texH, &texarray);
   OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
 
   // генерируем ИД для текстуры
@@ -298,13 +298,13 @@ struct vec3 {
 
 vec3 normal_to_triangle(const vec3 &v1, const vec3 &v2, const vec3 &v3) {
   // Вычисляем векторы, образованные двумя сторонами треугольника
-  vec3 edge1 = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
-  vec3 edge2 = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
+  vec3 b = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
+  vec3 a = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
 
   // Находим нормаль как векторное произведение этих двух сторон
-  vec3 normal = {edge1[1] * edge2[2] - edge1[2] * edge2[1],
-                 edge1[2] * edge2[0] - edge1[0] * edge2[2],
-                 edge1[0] * edge2[1] - edge1[1] * edge2[0]};
+  vec3 normal = {a[1] * b[2] - b[1] * a[2],
+                 -a[0] * b[2] + b[0] * a[2],
+                 a[0] * b[1] - b[0] * a[1]};
 
   // Нормализуем нормаль, чтобы получить единичный вектор
   return normal.normalize();
@@ -343,7 +343,7 @@ void Render(OpenGL *ogl) {
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_LIGHTING);
   glEnable(GL_COLOR_MATERIAL);
-
+  glEnable(GL_NORMALIZE);
   glEnable(GL_DEPTH_TEST);
   if (textureMode)
     glEnable(GL_TEXTURE_2D);
@@ -386,7 +386,7 @@ void Render(OpenGL *ogl) {
   };
   const double h = 3;
   std::vector<vec3> texs_h = {
-      {5, 15, h},  // 0
+      {4, 16, h},  // 0
       {3, 11, h},  // 1
       {9, 9, h},   // 2
       {9, 4, h},   // 3
@@ -423,7 +423,7 @@ void Render(OpenGL *ogl) {
   color_white.colorize();
   // bottom
   // color_cover.colorize();
-  /*glBegin(GL_TRIANGLES);
+  glBegin(GL_TRIANGLES);
   glNormal3dv(normal_bottom.data);
   texs[0].tex(cell, texW, texH);
   vs[0].draw();
@@ -466,10 +466,11 @@ void Render(OpenGL *ogl) {
   vs[6].draw();
   texs[7].tex(cell, texW, texH);
   vs[7].draw();
-  glEnd();*/
+  glEnd();
 
   // top
   glBegin(GL_TRIANGLES);
+  vec3 n = normal_to_triangle(vs_h[0], vs_h[1], vs_h[2]);
   glNormal3dv(normal_top.data);
   texs_h[0].tex(cell, texW, texH);
   vs_h[0].draw();
@@ -533,7 +534,8 @@ void Render(OpenGL *ogl) {
 
   // walls
   glBegin(GL_QUADS);
-  color_wall.colorize();
+  //color_wall.colorize();
+  color_white.colorize();
   for (int i = 0; i < vs.size(); i++) {
     vec3 normal = normal_to_triangle(vs[i], vs[(i + i) / vs.size()], vs_h[i]);
     glNormal3dv(normal.data);
@@ -580,7 +582,8 @@ void Render(OpenGL *ogl) {
   color_cover_green.colorize();
   center_h.draw();
   for (vec3 &v : circle_h) {
-    v.draw();
+     v.draw();
+
   }
   glEnd();
 
@@ -589,8 +592,7 @@ void Render(OpenGL *ogl) {
   color_wall_green.colorize();
   int circle_dots = circle.size();
   for (int i = 0; i < circle_dots; i++) {
-    vec3 normal = normal_to_triangle(circle[i], circle[(i + i) / circle_dots],
-                                     circle_h[i]);
+      vec3 normal = normal_to_triangle(circle[i], circle[(i + i) / circle_dots], circle_h[i]);
     glNormal3dv(normal.data);
     circle[i].draw();
     circle[(i + 1) % circle_dots].draw();
