@@ -33,29 +33,29 @@ vec3 rgb_to_normal(vec3 rgb) {
   return vec3(rgb[0] / 255., rgb[1] / 255., rgb[2] / 255.);
 }
 
-std::vector<vec3> make_circle(vec3 center, double radius, double start_angle, double end_angle) {
-    const double circle_points = 100;
-    std::vector<vec3> circle = {};
+std::vector<vec3> make_circle(vec3 center, double radius, double start_angle,
+                              double end_angle) {
+  const double circle_points = 100;
+  std::vector<vec3> circle = {};
 
-    for (double i = 0; i < circle_points; i++) {
-        const double angle =
-            start_angle + (std::abs(end_angle - start_angle)) / (circle_points - 1) * i;
-        vec3 v( center[0] + std::cos(angle) * radius,
-                center[1] + std::sin(angle) * radius,
-                center[2]);
-        circle.push_back(v);
-    }
-    return circle;
+  for (double i = 0; i < circle_points; i++) {
+    const double angle = start_angle + (std::abs(end_angle - start_angle)) /
+                                           (circle_points - 1) * i;
+    vec3 v(center[0] + std::cos(angle) * radius,
+           center[1] + std::sin(angle) * radius, center[2]);
+    circle.push_back(v);
+  }
+  return circle;
 }
 
 double get_angle_in_rad(vec3 start, vec3 end) {
-    vec3 v = vec3(start[0] - end[0], start[1] - end[1], start[2]);
-    double angle_in_rad = std::atan2(v[1], v[0]);
-    return angle_in_rad;
+  vec3 v = vec3(start[0] - end[0], start[1] - end[1], start[2]);
+  double angle_in_rad = std::atan2(v[1], v[0]);
+  return angle_in_rad;
 }
 
 double normalize_angle_in_rad(double angle) {
-    return (2 * pi + angle) / (2 * pi);
+  return (2 * pi + angle) / (2 * pi);
 }
 
 void Render(double delta_time) {
@@ -76,8 +76,8 @@ void Render(double delta_time) {
     vs_h.push_back(vec3(v[0], v[1], h));
   }
 
-  vec3 color_cover = rgb_to_normal(vec3(100, 100, 100));
-  vec3 color_wall = rgb_to_normal(vec3(200, 200, 200));
+  vec3 color_cover = rgb_to_normal(vec3(200, 200, 200));
+  vec3 color_wall = rgb_to_normal(vec3(100, 100, 100));
 
   // bottom
   color_cover.colorize();
@@ -140,54 +140,57 @@ void Render(double delta_time) {
   color_wall.colorize();
   glBegin(GL_QUADS);
   for (int i = 0; i < vs.size(); i++) {
-      vs[i].draw();
-      vs[(i + 1) % vs.size()].draw();
-      vs_h[(i + 1) % vs.size()].draw();
-      vs_h[i].draw();
+    vs[i].draw();
+    vs[(i + 1) % vs.size()].draw();
+    vs_h[(i + 1) % vs.size()].draw();
+    vs_h[i].draw();
   }
   glEnd();
 
   // circle
+  vec3 color_cover_green = rgb_to_normal(vec3(22, 224, 0));
+  vec3 color_wall_green = rgb_to_normal(vec3(23, 161, 8));
   vec3 line = vec3((vs[1][0] - vs[0][0]), (vs[1][1] - vs[0][1]), 0);
   vec3 center = vec3((vs[1][0] + vs[0][0]) / 2., (vs[1][1] + vs[0][1]) / 2., 0);
-  double radius = std::sqrt(std::pow(line[0] / 2., 2) + std::pow(line[1] / 2., 2));
+  double radius =
+      std::sqrt(std::pow(line[0] / 2., 2) + std::pow(line[1] / 2., 2));
   double start_angle = 1.7;
   double end_angle = start_angle + pi + 0.1;
-  std::vector circle = make_circle(center, radius, start_angle, end_angle);
-  
+  std::vector<vec3> circle =
+      make_circle(center, radius, start_angle, end_angle);
+
   // bottom
   glBegin(GL_TRIANGLE_FAN);
-  vec3(0, 255, 0).colorize();
+  color_cover_green.colorize();
   center.draw();
-  for (vec3& v : circle) {
-      v.draw();
+  for (vec3 &v : circle) {
+    v.draw();
   }
   glEnd();
 
   // top
   vec3 center_h = vec3(center[0], center[1], h);
   std::vector<vec3> circle_h = {};
-  for (vec3& v : circle) {
-      circle_h.push_back(vec3(v[0], v[1], h));
+  for (vec3 &v : circle) {
+    circle_h.push_back(vec3(v[0], v[1], h));
   }
 
   glBegin(GL_TRIANGLE_FAN);
-  vec3(0, 255, 0).colorize();
   center_h.draw();
-  for (vec3& v : circle_h) {
-      v.draw();
+  for (vec3 &v : circle_h) {
+    v.draw();
   }
   glEnd();
 
   // wall
   glBegin(GL_QUADS);
-  vec3(50, 100, 0).colorize();
+  color_wall_green.colorize();
   int circle_dots = circle.size();
-    for (int i = 0; i < circle_dots; i++) {
-        circle[i].draw();
-        circle[(i + 1) % circle_dots].draw();
-        circle_h[(i + 1) % circle_dots].draw();
-        circle_h[i].draw();
-    }
+  for (int i = 0; i < circle_dots; i++) {
+    circle[i].draw();
+    circle[(i + 1) % circle_dots].draw();
+    circle_h[(i + 1) % circle_dots].draw();
+    circle_h[i].draw();
+  }
   glEnd();
 }

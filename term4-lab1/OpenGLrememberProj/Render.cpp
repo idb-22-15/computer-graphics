@@ -65,8 +65,8 @@ Vertex fig_center(std::vector<Vertex> fig) {
 //	int count = 100;
 //	for (int i = 0; i < count + 1; i++) {
 //		const double angle = start_angle + (end_angle - start_angle) /
-//count * i; 		Vertex v(center.x + cos(angle) * radius, center.y + sin(angle) *
-//radius, center.z); 		circle.push_back(v);
+// count * i; 		Vertex v(center.x + cos(angle) * radius, center.y +
+// sin(angle) * radius, center.z); 		circle.push_back(v);
 //	}
 //	return circle;
 // }
@@ -87,12 +87,12 @@ double get_angle(Vertex start, Vertex end) {
 //
 //	// ��������� ������ (�������� ����� ��������)
 //	float radius = sqrt(pow((end.x - start.x), 2) + pow((end.y - start.y),
-//2)) / 2.0f;
+// 2)) / 2.0f;
 //
 //	// ���������� ���� ������ � ����� ���� (�������� ����������)
 //	float startAngle = get_angle(start, center); atan2(start.y - centerY,
-//start.x - centerX); 	float endAngle = get_angle(end, center); atan2(end.y -
-//centerY, end.x - centerX);
+// start.x - centerX); 	float endAngle = get_angle(end, center); atan2(end.y -
+// centerY, end.x - centerX);
 //
 //	// ������ ���� ���������� (�������� ����������)
 //	glBegin(GL_LINE_STRIP);
