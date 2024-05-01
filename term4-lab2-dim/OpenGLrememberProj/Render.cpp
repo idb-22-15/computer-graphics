@@ -16,8 +16,6 @@
 
 #include "GUItextRectangle.h"
 
-#include "stb_image.h"
-
 bool textureMode = true;
 bool lightMode = true;
 
@@ -212,11 +210,12 @@ void initRender(OpenGL *ogl) {
 
   // массив символов, (высота*ширина*4      4, потомучто   выше, мы указали
   // использовать по 4 байта на пиксель текстуры - R G B A)
-  //char *texCharArray;
+  char *texCharArray;
   int cnt;
-  unsigned char* texCharArray = stbi_load("uv1024.jpg", &texW, &texH, &cnt, 0);
-  //OpenGL::LoadBMP("texture.bmp", &texW, &texH, &texarray);
-  //OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
+  // unsigned char* texCharArray = stbi_load("uv1024.jpg", &texW, &texH, &cnt,
+  // 0);
+  OpenGL::LoadBMP("tex.bmp", &texW, &texH, &texarray);
+  OpenGL::RGBtoChar(texarray, texW, texH, &texCharArray);
 
   // генерируем ИД для текстуры
   glGenTextures(1, &texId);
@@ -229,8 +228,8 @@ void initRender(OpenGL *ogl) {
                GL_UNSIGNED_BYTE, texCharArray);
 
   // отчистка памяти
-  stbi_image_free(texCharArray);
-  //free(texCharArray);
+  // stbi_image_free(texCharArray);
+  free(texCharArray);
   free(texarray);
 
   // наводим шмон
@@ -283,9 +282,9 @@ struct vec3 {
   const double &operator[](int index) const { return data[index]; }
   void draw() { glVertex3dv(data); }
   void colorize() { glColor3dv(data); }
-  void tex(double scale, double teW, double texH) {
-    vec3 v = {(data[0] * scale) / texW, (texH - data[1] * scale) / texH,
-              data[2]};
+  void tex(double scale, double texW, double texH) {
+    vec3 v = {(data[0] * scale) / (double)texW,
+              (texH - data[1] * scale) / (double)texH, data[2]};
     glTexCoord3dv(v.data);
   }
   double len() {
@@ -341,9 +340,9 @@ double normalize_angle_in_rad(double angle) {
 }
 
 void Render(OpenGL *ogl) {
-  const int cell = 5; // px
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_LIGHTING);
+  glEnable(GL_COLOR_MATERIAL);
 
   glEnable(GL_DEPTH_TEST);
   if (textureMode)
@@ -385,27 +384,33 @@ void Render(OpenGL *ogl) {
       {15, 5, 0},  // 6
       {9, 8, 0},   // 7
   };
-
-  std::vector<vec3> texs = {
-      {5, 15, 0},  // 0
-      {3, 11, 0},  // 1
-      {3, 11, 0},  // 2
-      {9, 9, 0},   // 3
-      {9, 4, 0},   // 4
-      {15, 5, 0},  // 5
-      {13, 10, 0}, // 6
-      {17, 14, 0}  // 7
+  const double h = 3;
+  std::vector<vec3> texs_h = {
+      {5, 15, h},  // 0
+      {3, 11, h},  // 1
+      {9, 9, h},   // 2
+      {9, 4, h},   // 3
+      {15, 5, h},  // 4
+      {13, 10, h}, // 5
+      {17, 14, h}, // 6
+      {11, 11, h}  // 7
   };
 
-  const double h = 3;
+  std::vector<vec3> tesx_w = {
+      /* {1, 9, 0},
+       {1, 6, h},
+       {1, 6 + 6.325, h},
+       {}*/
+  };
+
   std::vector<vec3> vs_h = {};
-  std::vector<vec3> texs_h = {};
+  std::vector<vec3> texs = {};
 
   for (vec3 &v : vs) {
     vs_h.push_back(vec3(v[0], v[1], h));
   }
   for (vec3 &v : vs) {
-    texs_h.push_back((vec3(v[0], v[1], h)));
+    texs.push_back((vec3(v[0], v[1], 0)));
   }
 
   vec3 color_white = rgb_to_normal(vec3(255, 255, 255));
@@ -413,76 +418,100 @@ void Render(OpenGL *ogl) {
   vec3 color_wall = rgb_to_normal(vec3(100, 100, 100));
   vec3 normal_top = vec3(0, 0, 1);
   vec3 normal_bottom = vec3(0, 0, -1);
+  const int cell = 40; // px
+  glBindTexture(GL_TEXTURE_2D, texId);
   color_white.colorize();
   // bottom
   // color_cover.colorize();
-  glBegin(GL_TRIANGLES);
+  /*glBegin(GL_TRIANGLES);
   glNormal3dv(normal_bottom.data);
+  texs[0].tex(cell, texW, texH);
   vs[0].draw();
+  texs[1].tex(cell, texW, texH);
   vs[1].draw();
+  texs_h[2].tex(cell, texW, texH);
   vs[2].draw();
 
+  texs[0].tex(cell, texW, texH);
   vs[0].draw();
+  texs[2].tex(cell, texW, texH);
   vs[2].draw();
+  texs[7].tex(cell, texW, texH);
   vs[7].draw();
 
+  texs[2].tex(cell, texW, texH);
   vs[2].draw();
+  texs[3].tex(cell, texW, texH);
   vs[3].draw();
+  texs[4].tex(cell, texW, texH);
   vs[4].draw();
 
+  texs[2].tex(cell, texW, texH);
   vs[2].draw();
+  texs[4].tex(cell, texW, texH);
   vs[4].draw();
+  texs[5].tex(cell, texW, texH);
   vs[5].draw();
 
+  texs[2].tex(cell, texW, texH);
   vs[2].draw();
+  texs[5].tex(cell, texW, texH);
   vs[5].draw();
+  texs[7].tex(cell, texW, texH);
   vs[7].draw();
 
+  texs[5].tex(cell, texW, texH);
   vs[5].draw();
+  texs[6].tex(cell, texW, texH);
   vs[6].draw();
+  texs[7].tex(cell, texW, texH);
   vs[7].draw();
-  glEnd();
+  glEnd();*/
 
   // top
   glBegin(GL_TRIANGLES);
   glNormal3dv(normal_top.data);
-  // glBindTexture(GL_TEXTURE_2D, texId);
-  // texs[0].tex(cell);
-  // vs_h[0].draw();
-  // texs[1].tex(cell);
-  // vs_h[1].draw();
-  // texs[2].tex(cell);
-  // vs_h[2].draw();
-
-  vec3(5, 5, 0).tex(cell, texW, texH);
+  texs_h[0].tex(cell, texW, texH);
   vs_h[0].draw();
-  vec3(0, 5, 0).tex(cell, texW, texH);
+  texs_h[1].tex(cell, texW, texH);
   vs_h[1].draw();
-  vec3(5, 0, 0).tex(cell, texW, texH);
+  texs_h[2].tex(cell, texW, texH);
   vs_h[2].draw();
-  glEnd();
 
-  // texs[0].tex(cell);
-  // vs_h[0].draw();
-  // texs[2].tex(cell);
-  // vs_h[2].draw();
-  // texs[7].tex(cell);
-  // vs_h[7].draw();
-  /*vs_h[2].draw();
-  vs_h[3].draw();
-  vs_h[4].draw();
-
+  texs_h[0].tex(cell, texW, texH);
+  vs_h[0].draw();
+  texs_h[2].tex(cell, texW, texH);
   vs_h[2].draw();
-  vs_h[4].draw();
-  vs_h[5].draw();
-
-  vs_h[2].draw();
-  vs_h[5].draw();
+  texs_h[7].tex(cell, texW, texH);
   vs_h[7].draw();
 
+  texs_h[2].tex(cell, texW, texH);
+  vs_h[2].draw();
+  texs_h[3].tex(cell, texW, texH);
+  vs_h[3].draw();
+  texs_h[4].tex(cell, texW, texH);
+  vs_h[4].draw();
+
+  texs_h[2].tex(cell, texW, texH);
+  vs_h[2].draw();
+  texs_h[4].tex(cell, texW, texH);
+  vs_h[4].draw();
+  texs_h[5].tex(cell, texW, texH);
   vs_h[5].draw();
+
+  texs_h[2].tex(cell, texW, texH);
+  vs_h[2].draw();
+  texs_h[5].tex(cell, texW, texH);
+  vs_h[5].draw();
+  texs_h[7].tex(cell, texW, texH);
+  vs_h[7].draw();
+
+  texs_h[5].tex(cell, texW, texH);
+  vs_h[5].draw();
+  texs_h[6].tex(cell, texW, texH);
   vs_h[6].draw();
-  vs_h[7].draw();*/
+  texs_h[7].tex(cell, texW, texH);
+  vs_h[7].draw();
 
   // texs[2].tex(cell);
   // texs[3].tex(cell);
