@@ -27,7 +27,15 @@ struct _color {
 
 vec3 f(vec3 a, vec3 b, float t) { return a * (1 - t) + b * t; }
 vec3 second_order_bezier(vec3 p1, vec3 p2, vec3 p3, float t) {
-  return p1 * (1 - t) * (1 - t) + 2.0f * p2 * t * (1 - t) + p3 * t * t;
+  return p1 * (1 - t) * (1 - t)    //
+         + 2.0f * p2 * t * (1 - t) //
+         + p3 * t * t;
+}
+vec3 third_order_bezier(vec3 p0, vec3 p1, vec3 p2, vec3 p3, float t) {
+  return std::pow(1 - t, 3.0f) * p0             //
+         + 3 * t * std::pow(1 - t, 2.0f) * p1 + //
+         3 * std::pow(t, 2.0f) * (1 - t) * p2   //
+         + std::pow(t, 3.0f) * p3;
 }
 
 float t_max = 0;
@@ -85,12 +93,67 @@ void draw_second_order_bezier(float t_max) {
   glEnd();
 }
 
+void draw_third_order_bezier(float t_max) {
+  vec3 P1 = {0, 0, 0};
+  vec3 P2 = {-4, 6, 7};
+  vec3 P3 = {10, 10, 0};
+  vec3 P4 = {15, 20, 5};
+
+  glBegin(GL_LINES);
+  draw(P1);
+  draw(P2);
+  draw(P2);
+  draw(P3);
+  glEnd();
+
+  glPointSize(10);
+  glLineWidth(3);
+  colorize(color.green);
+
+  vec3 A;
+  vec3 B;
+  vec3 P;
+
+  glBegin(GL_LINE_STRIP);
+  for (float t = 0; t <= t_max; t += 0.01) {
+
+    A = f(P1, P2, t);
+    B = f(P2, P3, t);
+    // P = f(A, B, t);
+    P = third_order_bezier(P1, P2, P3, P4, t);
+    draw(P);
+  }
+  glEnd();
+
+  colorize(color.purple);
+  glLineWidth(1);
+
+  glBegin(GL_LINES);
+  draw(A);
+  draw(B);
+  glEnd();
+
+  glBegin(GL_POINTS);
+  draw(A);
+  draw(B);
+  draw(P);
+  glEnd();
+
+  colorize(color.red);
+  glBegin(GL_POINTS);
+  draw(P1);
+  draw(P2);
+  draw(P3);
+  glEnd();
+}
+
 void Render(double delta_time) {
   t_max += delta_time / 5;
   if (t_max > 1)
     t_max = 0;
 
   draw_second_order_bezier(t_max);
+  //draw_third_order_bezier(t_max);
   // glm::vec3 v = {1, 2, 3};
 
   // glBegin(GL_POINTS);

@@ -474,7 +474,6 @@ struct Cover {
     vs[6].draw();
     for (int i = circle_points / 2; i <= circle_points; i++) {
       blue_circle->vs[i].tex(scale, texW, texH);
-
       blue_circle->vs[i].draw();
     }
     glEnd();

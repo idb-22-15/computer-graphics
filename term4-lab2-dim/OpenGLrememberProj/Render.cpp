@@ -298,12 +298,13 @@ struct vec3 {
 
 vec3 normal_to_triangle(const vec3 &v1, const vec3 &v2, const vec3 &v3) {
   // ��������� �������, ������������ ����� ��������� ������������
-  vec3 b = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
-  vec3 a = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
+  vec3 a = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
+  vec3 b = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
 
   // ������� ������� ��� ��������� ������������ ���� ���� ������
-  vec3 normal = {a[1] * b[2] - b[1] * a[2], -a[0] * b[2] + b[0] * a[2],
-                 a[0] * b[1] - b[0] * a[1]};
+  vec3 normal = {a[1] * b[2] - b[1] * a[2],  //
+                 -a[0] * b[2] + b[0] * a[2], //
+                 a[0] * b[1] - b[0] * a[1]}; //
 
   // ����������� �������, ����� �������� ��������� ������
   return normal.normalize();
@@ -515,18 +516,34 @@ void Render(OpenGL *ogl) {
   glEnd();
 
   // walls
-  glBegin(GL_QUADS);
   // color_wall.colorize();
   color_white.colorize();
   for (int i = 0; i < vs.size(); i++) {
-    vec3 normal = normal_to_triangle(vs[i], vs[(i + i) / vs.size()], vs_h[i]);
+    int nextI = (i + 1) % vs.size();
+    vec3 normal = {0,0,0};
+    normal = normal_to_triangle(vs_h[i], vs[nextI], vs[i]);
     glNormal3dv(normal.data);
+    glBegin(GL_QUADS);
+    
     vs[i].draw();
-    vs[(i + 1) % vs.size()].draw();
-    vs_h[(i + 1) % vs.size()].draw();
+    vs[nextI].draw();
+    vs_h[nextI].draw();
     vs_h[i].draw();
+    glEnd();
+
+    glLineWidth(3);
+    glBegin(GL_LINES);
+    vs[i].draw();
+    vec3(vs[i][0] + normal[0], vs[i][1] + normal[1], vs[i][2] + normal[2]).draw();
+    vs[nextI].draw();
+    vec3(vs[nextI][0] + normal[0], vs[nextI][1] + normal[1], vs[nextI][2] + normal[2]).draw();
+    vs_h[nextI].draw();
+    vec3(vs_h[(i + 1) % vs.size()][0] + normal[0], vs_h[nextI][1] + normal[1], vs_h[nextI][2] + normal[2]).draw();
+    vs_h[i].draw();
+    vec3(vs_h[i][0] + normal[0], vs_h[i][1] + normal[1], vs_h[i][2] + normal[2]).draw();
+    glEnd();
+    glLineWidth(1);
   }
-  glEnd();
 
   // circle
   vec3 color_cover_green = rgb_to_normal(vec3(165, 214, 167));
@@ -535,8 +552,6 @@ void Render(OpenGL *ogl) {
   vec3 center = vec3((vs[1][0] + vs[0][0]) / 2., (vs[1][1] + vs[0][1]) / 2., 0);
   double radius =
       std::sqrt(std::pow(line[0] / 2., 2) + std::pow(line[1] / 2., 2));
-  double start_angle_in_grad = 71.85;
-  double end_angle_in_grad = -78.65;
   double start_angle = 1.7;
   double end_angle = start_angle + pi + 0.1;
   std::vector<vec3> circle =
@@ -565,7 +580,7 @@ void Render(OpenGL *ogl) {
   color_cover_green.colorize();
   center_h.draw();
   for (vec3 &v : circle_h) {
-      v.tex(cell, texW, texH);
+    v.tex(cell, texW, texH);
     v.draw();
   }
   glEnd();
@@ -575,8 +590,11 @@ void Render(OpenGL *ogl) {
   color_wall_green.colorize();
   int circle_dots = circle.size();
   for (int i = 0; i < circle_dots; i++) {
-    vec3 normal = normal_to_triangle(circle[i], circle[(i + i) / circle_dots],
-                                     circle_h[i]);
+    int nextI = (i + 1) % circle_dots;
+    vec3 normal = normal_to_triangle(circle_h[i], circle[nextI],
+                                     circle[i]);
+    normal[0] = -normal[0];
+    normal[1] = -normal[1];
     glNormal3dv(normal.data);
     circle[i].draw();
     circle[(i + 1) % circle_dots].draw();
