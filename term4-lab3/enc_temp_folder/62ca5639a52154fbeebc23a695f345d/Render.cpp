@@ -202,7 +202,7 @@ void draw_bezier_surface(std::vector<std::vector<vec3>> ps, float t_max) {
   int n = ps.size();
   int m = ps[0].size();
 
-  colorize(color.black);
+  colorize(color.red);
   glPointSize(3);
   glBegin(GL_POINTS);
   for (auto &row : ps) {
@@ -212,12 +212,14 @@ void draw_bezier_surface(std::vector<std::vector<vec3>> ps, float t_max) {
   }
   glEnd();
 
-  for (int i = 0; i < n - 1; i++) {
-    for (int j = 0; j < m - 1; j++) {
+  colorize(color.blue);
+
+  for (int i = 0; i < n ; i++) {
+    for (int j = 0; j < m ; j++) {
       vec3 top_left = ps[i][j];
-      vec3 top_right = ps[i][j + 1];
-      vec3 bottom_left = ps[i + 1][j];
-      vec3 bottom_right = ps[i + 1][j + 1];
+      vec3 top_right = ps[i][(j + 1) % m];
+      vec3 bottom_left = ps[(i + 1) % n][j];
+      vec3 bottom_right = ps[(i + 1) % n][(j + 1) % m];
 
       glBegin(GL_LINE_STRIP);
       draw(top_left);
