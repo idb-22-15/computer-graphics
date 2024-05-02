@@ -549,13 +549,13 @@ void Render(OpenGL *ogl) {
   //!=======================================================
   // Прогать тут
   Vertex color_white = Vertex(255, 255, 255).toRGB();
-  color_white.colorize();
+  Vertex color_gray = Vertex(200, 200, 200).toRGB();
 
   Vertex n = {0, 0, -1};
   Vertex n_top = {0, 0, 1};
 
-  Cover cover(0, n, color_white);
-  Cover cover_top(2, n_top, color_white);
+  Cover cover(0, n, color_gray);
+  Cover cover_top(2, n_top, color_gray);
 
   // covers
   cover.draw();
@@ -585,16 +585,16 @@ void Render(OpenGL *ogl) {
     cover_top.vs[i].draw();
     glEnd();
 
-    glBegin(GL_LINES);
-    cover.vs[i].draw();
-    (cover.vs[i] + n).draw();
-    cover_top.vs[i].draw();
-    (cover_top.vs[i] + n).draw();
-    cover.vs[nextI].draw();
-    (cover.vs[nextI] + n).draw();
-    cover_top.vs[nextI].draw();
-    (cover_top.vs[nextI] + n).draw();
-    glEnd();
+    // glBegin(GL_LINES);
+    // cover.vs[i].draw();
+    // (cover.vs[i] + n).draw();
+    // cover_top.vs[i].draw();
+    // (cover_top.vs[i] + n).draw();
+    // cover.vs[nextI].draw();
+    // (cover.vs[nextI] + n).draw();
+    // cover_top.vs[nextI].draw();
+    // (cover_top.vs[nextI] + n).draw();
+    // glEnd();
   }
 
   // green circle wall
@@ -607,7 +607,6 @@ void Render(OpenGL *ogl) {
                                   cover_top.green_circle->vs[i]);
 
     glNormal3d(n.x, n.y, n.z);
-
     cover.green_circle->vs[i].tex(scale, texW, texH);
     cover.green_circle->vs[i].draw();
     cover.green_circle->vs[nextI].tex(scale, texW, texH);
@@ -619,7 +618,7 @@ void Render(OpenGL *ogl) {
     glEnd();
   }
 
-  // blue circle wall //! ==== ???? ??? ??
+  // blue circle wall
   for (int i = 0; i < cover.blue_circle->vs.size() - 1; i++) {
     int len = cover.blue_circle->vs.size();
     int nextI = (i + 1) % len;
