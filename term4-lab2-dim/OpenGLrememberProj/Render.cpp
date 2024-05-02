@@ -528,54 +528,6 @@ void Render(OpenGL *ogl) {
   points[7].draw();
   glEnd();
 
-  // top
-  glBegin(GL_TRIANGLES);
-  glColor4d(0, 0, 1, 0.25);
-  vec3 n = normal_to_triangle(points_h[0], points_h[1], points_h[2]);
-  glNormal3dv(normal_top.data);
-  texs_h[0].tex(cell, texW, texH);
-  points_h[0].draw();
-  texs_h[1].tex(cell, texW, texH);
-  points_h[1].draw();
-  texs_h[2].tex(cell, texW, texH);
-  points_h[2].draw();
-
-  texs_h[0].tex(cell, texW, texH);
-  points_h[0].draw();
-  texs_h[2].tex(cell, texW, texH);
-  points_h[2].draw();
-  texs_h[7].tex(cell, texW, texH);
-  points_h[7].draw();
-
-  texs_h[2].tex(cell, texW, texH);
-  points_h[2].draw();
-  texs_h[3].tex(cell, texW, texH);
-  points_h[3].draw();
-  texs_h[4].tex(cell, texW, texH);
-  points_h[4].draw();
-
-  texs_h[2].tex(cell, texW, texH);
-  points_h[2].draw();
-  texs_h[4].tex(cell, texW, texH);
-  points_h[4].draw();
-  texs_h[5].tex(cell, texW, texH);
-  points_h[5].draw();
-
-  texs_h[2].tex(cell, texW, texH);
-  points_h[2].draw();
-  texs_h[5].tex(cell, texW, texH);
-  points_h[5].draw();
-  texs_h[7].tex(cell, texW, texH);
-  points_h[7].draw();
-
-  texs_h[5].tex(cell, texW, texH);
-  points_h[5].draw();
-  texs_h[6].tex(cell, texW, texH);
-  points_h[6].draw();
-  texs_h[7].tex(cell, texW, texH);
-  points_h[7].draw();
-  glEnd();
-
   // walls
   // color_wall.colorize();
   // color_white.colorize();
@@ -613,6 +565,54 @@ void Render(OpenGL *ogl) {
         .draw();
     glEnd();
     glLineWidth(1);
+
+    // top
+    glBegin(GL_TRIANGLES);
+    glColor4d(0, 0, 1, 0.25);
+    vec3 n = normal_to_triangle(points_h[0], points_h[1], points_h[2]);
+    glNormal3dv(normal_top.data);
+    texs_h[0].tex(cell, texW, texH);
+    points_h[0].draw();
+    texs_h[1].tex(cell, texW, texH);
+    points_h[1].draw();
+    texs_h[2].tex(cell, texW, texH);
+    points_h[2].draw();
+
+    texs_h[0].tex(cell, texW, texH);
+    points_h[0].draw();
+    texs_h[2].tex(cell, texW, texH);
+    points_h[2].draw();
+    texs_h[7].tex(cell, texW, texH);
+    points_h[7].draw();
+
+    texs_h[2].tex(cell, texW, texH);
+    points_h[2].draw();
+    texs_h[3].tex(cell, texW, texH);
+    points_h[3].draw();
+    texs_h[4].tex(cell, texW, texH);
+    points_h[4].draw();
+
+    texs_h[2].tex(cell, texW, texH);
+    points_h[2].draw();
+    texs_h[4].tex(cell, texW, texH);
+    points_h[4].draw();
+    texs_h[5].tex(cell, texW, texH);
+    points_h[5].draw();
+
+    texs_h[2].tex(cell, texW, texH);
+    points_h[2].draw();
+    texs_h[5].tex(cell, texW, texH);
+    points_h[5].draw();
+    texs_h[7].tex(cell, texW, texH);
+    points_h[7].draw();
+
+    texs_h[5].tex(cell, texW, texH);
+    points_h[5].draw();
+    texs_h[6].tex(cell, texW, texH);
+    points_h[6].draw();
+    texs_h[7].tex(cell, texW, texH);
+    points_h[7].draw();
+    glEnd();
   }
 
   // ================================================================================
