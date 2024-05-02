@@ -283,9 +283,9 @@ struct vec3 {
   void draw() { glVertex3dv(data); }
   void colorize() { glColor3dv(data); }
   void tex(double scale, double texW, double texH) {
-    vec3 v = {(data[0] * scale) / (double)texW,
+    vec3 p = {(data[0] * scale) / (double)texW,
               (texH - data[1] * scale) / (double)texH, data[2]};
-    glTexCoord3dv(v.data);
+    glTexCoord3dv(p.data);
   }
   double len() {
     return std::sqrt(data[0] * data[0] + data[1] * data[1] + data[2] * data[2]);
@@ -330,8 +330,8 @@ std::vector<vec3> make_circle(vec3 center, double radius, double start_angle,
 }
 
 double get_angle_in_rad(vec3 start, vec3 end) {
-  vec3 v = vec3(start[0] - end[0], start[1] - end[1], start[2]);
-  double angle_in_rad = std::atan2(v[1], v[0]);
+  vec3 p = vec3(start[0] - end[0], start[1] - end[1], start[2]);
+  double angle_in_rad = std::atan2(p[1], p[0]);
   return angle_in_rad;
 }
 
@@ -352,8 +352,8 @@ void Render(OpenGL *ogl) {
     glEnable(GL_LIGHTING);
 
   // ��������������
-  // glEnable(GL_BLEND);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // ��������� ���������
   GLfloat amb[] = {0.2, 0.2, 0.1, 1.};
@@ -374,7 +374,7 @@ void Render(OpenGL *ogl) {
 
   // ������� ���
   //================================================================================
-  std::vector<vec3> vs = {
+  std::vector<vec3> points = {
       {2, 3, 0},   // 0 green
       {1, 8, 0},   // 1 green
       {7, 10, 0},  // 2
@@ -403,14 +403,14 @@ void Render(OpenGL *ogl) {
        {}*/
   };
 
-  std::vector<vec3> vs_h = {};
+  std::vector<vec3> points_h = {};
   std::vector<vec3> texs = {};
 
-  for (vec3 &v : vs) {
-    vs_h.push_back(vec3(v[0], v[1], h));
+  for (vec3 &p : points) {
+    points_h.push_back(vec3(p[0], p[1], h));
   }
-  for (vec3 &v : vs) {
-    texs.push_back((vec3(v[0], v[1], 0)));
+  for (vec3 &p : points) {
+    texs.push_back((vec3(p[0], p[1], 0)));
   }
 
   vec3 color_white = rgb_to_normal(vec3(255, 255, 255));
@@ -421,135 +421,14 @@ void Render(OpenGL *ogl) {
   const int cell = 40; // px
   glBindTexture(GL_TEXTURE_2D, texId);
   color_white.colorize();
-  // bottom
-  // color_cover.colorize();
-  glBegin(GL_TRIANGLES);
-  glNormal3dv(normal_bottom.data);
-  texs[0].tex(cell, texW, texH);
-  vs[0].draw();
-  texs[1].tex(cell, texW, texH);
-  vs[1].draw();
-  texs_h[2].tex(cell, texW, texH);
-  vs[2].draw();
-
-  texs[0].tex(cell, texW, texH);
-  vs[0].draw();
-  texs[2].tex(cell, texW, texH);
-  vs[2].draw();
-  texs[7].tex(cell, texW, texH);
-  vs[7].draw();
-
-  texs[2].tex(cell, texW, texH);
-  vs[2].draw();
-  texs[3].tex(cell, texW, texH);
-  vs[3].draw();
-  texs[4].tex(cell, texW, texH);
-  vs[4].draw();
-
-  texs[2].tex(cell, texW, texH);
-  vs[2].draw();
-  texs[4].tex(cell, texW, texH);
-  vs[4].draw();
-  texs[5].tex(cell, texW, texH);
-  vs[5].draw();
-
-  texs[2].tex(cell, texW, texH);
-  vs[2].draw();
-  texs[5].tex(cell, texW, texH);
-  vs[5].draw();
-  texs[7].tex(cell, texW, texH);
-  vs[7].draw();
-
-  texs[5].tex(cell, texW, texH);
-  vs[5].draw();
-  texs[6].tex(cell, texW, texH);
-  vs[6].draw();
-  texs[7].tex(cell, texW, texH);
-  vs[7].draw();
-  glEnd();
-
-  // top
-  glBegin(GL_TRIANGLES);
-  vec3 n = normal_to_triangle(vs_h[0], vs_h[1], vs_h[2]);
-  glNormal3dv(normal_top.data);
-  texs_h[0].tex(cell, texW, texH);
-  vs_h[0].draw();
-  texs_h[1].tex(cell, texW, texH);
-  vs_h[1].draw();
-  texs_h[2].tex(cell, texW, texH);
-  vs_h[2].draw();
-
-  texs_h[0].tex(cell, texW, texH);
-  vs_h[0].draw();
-  texs_h[2].tex(cell, texW, texH);
-  vs_h[2].draw();
-  texs_h[7].tex(cell, texW, texH);
-  vs_h[7].draw();
-
-  texs_h[2].tex(cell, texW, texH);
-  vs_h[2].draw();
-  texs_h[3].tex(cell, texW, texH);
-  vs_h[3].draw();
-  texs_h[4].tex(cell, texW, texH);
-  vs_h[4].draw();
-
-  texs_h[2].tex(cell, texW, texH);
-  vs_h[2].draw();
-  texs_h[4].tex(cell, texW, texH);
-  vs_h[4].draw();
-  texs_h[5].tex(cell, texW, texH);
-  vs_h[5].draw();
-
-  texs_h[2].tex(cell, texW, texH);
-  vs_h[2].draw();
-  texs_h[5].tex(cell, texW, texH);
-  vs_h[5].draw();
-  texs_h[7].tex(cell, texW, texH);
-  vs_h[7].draw();
-
-  texs_h[5].tex(cell, texW, texH);
-  vs_h[5].draw();
-  texs_h[6].tex(cell, texW, texH);
-  vs_h[6].draw();
-  texs_h[7].tex(cell, texW, texH);
-  vs_h[7].draw();
-  glEnd();
-
-  // walls
-  // color_wall.colorize();
-  color_white.colorize();
-  for (int i = 0; i < vs.size(); i++) {
-    int nextI = (i + 1) % vs.size();
-    vec3 normal = {0,0,0};
-    normal = normal_to_triangle(vs_h[i], vs[nextI], vs[i]);
-    glNormal3dv(normal.data);
-    glBegin(GL_QUADS);
-    
-    vs[i].draw();
-    vs[nextI].draw();
-    vs_h[nextI].draw();
-    vs_h[i].draw();
-    glEnd();
-
-    glLineWidth(3);
-    glBegin(GL_LINES);
-    vs[i].draw();
-    vec3(vs[i][0] + normal[0], vs[i][1] + normal[1], vs[i][2] + normal[2]).draw();
-    vs[nextI].draw();
-    vec3(vs[nextI][0] + normal[0], vs[nextI][1] + normal[1], vs[nextI][2] + normal[2]).draw();
-    vs_h[nextI].draw();
-    vec3(vs_h[(i + 1) % vs.size()][0] + normal[0], vs_h[nextI][1] + normal[1], vs_h[nextI][2] + normal[2]).draw();
-    vs_h[i].draw();
-    vec3(vs_h[i][0] + normal[0], vs_h[i][1] + normal[1], vs_h[i][2] + normal[2]).draw();
-    glEnd();
-    glLineWidth(1);
-  }
 
   // circle
   vec3 color_cover_green = rgb_to_normal(vec3(165, 214, 167));
   vec3 color_wall_green = rgb_to_normal(vec3(197, 225, 165));
-  vec3 line = vec3((vs[1][0] - vs[0][0]), (vs[1][1] - vs[0][1]), 0);
-  vec3 center = vec3((vs[1][0] + vs[0][0]) / 2., (vs[1][1] + vs[0][1]) / 2., 0);
+  vec3 line =
+      vec3((points[1][0] - points[0][0]), (points[1][1] - points[0][1]), 0);
+  vec3 center = vec3((points[1][0] + points[0][0]) / 2.,
+                     (points[1][1] + points[0][1]) / 2., 0);
   double radius =
       std::sqrt(std::pow(line[0] / 2., 2) + std::pow(line[1] / 2., 2));
   double start_angle = 1.7;
@@ -591,8 +470,7 @@ void Render(OpenGL *ogl) {
   int circle_dots = circle.size();
   for (int i = 0; i < circle_dots; i++) {
     int nextI = (i + 1) % circle_dots;
-    vec3 normal = normal_to_triangle(circle_h[i], circle[nextI],
-                                     circle[i]);
+    vec3 normal = normal_to_triangle(circle_h[i], circle[nextI], circle[i]);
     normal[0] = -normal[0];
     normal[1] = -normal[1];
     glNormal3dv(normal.data);
@@ -602,6 +480,140 @@ void Render(OpenGL *ogl) {
     circle_h[i].draw();
   }
   glEnd();
+
+  // bottom
+  // color_cover.colorize();
+  glBegin(GL_TRIANGLES);
+  glNormal3dv(normal_bottom.data);
+  texs[0].tex(cell, texW, texH);
+  points[0].draw();
+  texs[1].tex(cell, texW, texH);
+  points[1].draw();
+  texs_h[2].tex(cell, texW, texH);
+  points[2].draw();
+
+  texs[0].tex(cell, texW, texH);
+  points[0].draw();
+  texs[2].tex(cell, texW, texH);
+  points[2].draw();
+  texs[7].tex(cell, texW, texH);
+  points[7].draw();
+
+  texs[2].tex(cell, texW, texH);
+  points[2].draw();
+  texs[3].tex(cell, texW, texH);
+  points[3].draw();
+  texs[4].tex(cell, texW, texH);
+  points[4].draw();
+
+  texs[2].tex(cell, texW, texH);
+  points[2].draw();
+  texs[4].tex(cell, texW, texH);
+  points[4].draw();
+  texs[5].tex(cell, texW, texH);
+  points[5].draw();
+
+  texs[2].tex(cell, texW, texH);
+  points[2].draw();
+  texs[5].tex(cell, texW, texH);
+  points[5].draw();
+  texs[7].tex(cell, texW, texH);
+  points[7].draw();
+
+  texs[5].tex(cell, texW, texH);
+  points[5].draw();
+  texs[6].tex(cell, texW, texH);
+  points[6].draw();
+  texs[7].tex(cell, texW, texH);
+  points[7].draw();
+  glEnd();
+
+  // top
+  glBegin(GL_TRIANGLES);
+  glColor4d(0, 0, 1, 0.25);
+  vec3 n = normal_to_triangle(points_h[0], points_h[1], points_h[2]);
+  glNormal3dv(normal_top.data);
+  texs_h[0].tex(cell, texW, texH);
+  points_h[0].draw();
+  texs_h[1].tex(cell, texW, texH);
+  points_h[1].draw();
+  texs_h[2].tex(cell, texW, texH);
+  points_h[2].draw();
+
+  texs_h[0].tex(cell, texW, texH);
+  points_h[0].draw();
+  texs_h[2].tex(cell, texW, texH);
+  points_h[2].draw();
+  texs_h[7].tex(cell, texW, texH);
+  points_h[7].draw();
+
+  texs_h[2].tex(cell, texW, texH);
+  points_h[2].draw();
+  texs_h[3].tex(cell, texW, texH);
+  points_h[3].draw();
+  texs_h[4].tex(cell, texW, texH);
+  points_h[4].draw();
+
+  texs_h[2].tex(cell, texW, texH);
+  points_h[2].draw();
+  texs_h[4].tex(cell, texW, texH);
+  points_h[4].draw();
+  texs_h[5].tex(cell, texW, texH);
+  points_h[5].draw();
+
+  texs_h[2].tex(cell, texW, texH);
+  points_h[2].draw();
+  texs_h[5].tex(cell, texW, texH);
+  points_h[5].draw();
+  texs_h[7].tex(cell, texW, texH);
+  points_h[7].draw();
+
+  texs_h[5].tex(cell, texW, texH);
+  points_h[5].draw();
+  texs_h[6].tex(cell, texW, texH);
+  points_h[6].draw();
+  texs_h[7].tex(cell, texW, texH);
+  points_h[7].draw();
+  glEnd();
+
+  // walls
+  // color_wall.colorize();
+  // color_white.colorize();
+  glColor3d(0.2, 0.4, 0.4);
+  for (int i = 0; i < points.size(); i++) {
+    int nextI = (i + 1) % points.size();
+    vec3 normal = {0, 0, 0};
+    normal = normal_to_triangle(points_h[i], points[nextI], points[i]);
+    glNormal3dv(normal.data);
+    glBegin(GL_QUADS);
+
+    points[i].draw();
+    points[nextI].draw();
+    points_h[nextI].draw();
+    points_h[i].draw();
+    glEnd();
+
+    glLineWidth(3);
+    glBegin(GL_LINES);
+    points[i].draw();
+    vec3(points[i][0] + normal[0], points[i][1] + normal[1],
+         points[i][2] + normal[2])
+        .draw();
+    points[nextI].draw();
+    vec3(points[nextI][0] + normal[0], points[nextI][1] + normal[1],
+         points[nextI][2] + normal[2])
+        .draw();
+    points_h[nextI].draw();
+    vec3(points_h[(i + 1) % points.size()][0] + normal[0],
+         points_h[nextI][1] + normal[1], points_h[nextI][2] + normal[2])
+        .draw();
+    points_h[i].draw();
+    vec3(points_h[i][0] + normal[0], points_h[i][1] + normal[1],
+         points_h[i][2] + normal[2])
+        .draw();
+    glEnd();
+    glLineWidth(1);
+  }
 
   // ================================================================================
   // ��������� ������ ������

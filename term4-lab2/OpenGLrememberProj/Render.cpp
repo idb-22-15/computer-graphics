@@ -289,6 +289,7 @@ struct Vertex {
     return Vertex(x / l, y / l, z / l);
   }
   void colorize() { glColor3d(x, y, z); }
+  void colorize(double a) { glColor4d(x, y, z, a); }
 
   void draw() { glVertex3d(x, y, z); }
 
@@ -445,7 +446,8 @@ struct Cover {
   void draw() {
     glBegin(GL_TRIANGLE_FAN);
     glNormal3d(normal.x, normal.y, normal.z);
-    color.colorize();
+    glColor4d(color.x, color.y, color.z, 0.25);
+    // color.colorize();
     green_circle->center.tex(scale, texW, texH);
     green_circle->center.draw();
     green_circle->draw();
@@ -526,8 +528,8 @@ void Render(OpenGL *ogl) {
 
   glBindTexture(GL_TEXTURE_2D, texId);
   // альфаналожение
-  // glEnable(GL_BLEND);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   // настройка материала
   GLfloat amb[] = {0.2, 0.2, 0.1, 1.};
@@ -557,12 +559,9 @@ void Render(OpenGL *ogl) {
   Cover cover(0, n, color_gray);
   Cover cover_top(2, n_top, color_gray);
 
-  // covers
-  cover.draw();
-  cover_top.draw();
-
   // walls
-  color_white.colorize();
+  // color_white.colorize(1);
+  glColor3d(1, 0, 0);
   for (int i = 0; i < cover.vs.size(); i++) {
     if (i == 4)
       continue;
@@ -639,6 +638,10 @@ void Render(OpenGL *ogl) {
     cover_top.blue_circle->vs[i].draw();
     glEnd();
   }
+
+  // covers
+  cover.draw();
+  cover_top.draw();
 
   // !=========================================
   // Сообщение вверху экрана
