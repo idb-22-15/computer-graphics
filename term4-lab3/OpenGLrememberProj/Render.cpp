@@ -22,45 +22,17 @@ struct _color {
   vec3 red = {1, 0, 0};
   vec3 green = {0, 1, 0};
   vec3 glue = {0, 0, 1};
-  vec3 purple = { 1, 0, 1 };
+  vec3 purple = {1, 0, 1};
 } color;
 
 vec3 f(vec3 a, vec3 b, float t) { return a * (1 - t) + b * t; }
-
+vec3 second_order_bezier(vec3 p1, vec3 p2, vec3 p3, float t) {
+  return p1 * (1 - t) * (1 - t) + 2.0f * p2 * t * (1 - t) + p3 * t * t;
+}
 
 float t_max = 0;
-void Render(double delta_time) {
-	t_max += delta_time / 5;
-	if (t_max > 1) t_max = 0;
-  // glm::vec3 v = {1, 2, 3};
 
-  // glBegin(GL_POINTS);
-  // glColor3d(1, 0, 0);
-
-  // glVertex3f(v.x, v.y, v.z);
-  // glEnd();
-
-  /*vec3 A = {1, 3, 4};
-  vec3 B = {4, 6, 7};
-
-  glBegin(GL_LINE_STRIP);
-  glVertex3f(A.x, A.y, A.z);
-  glVertex3f(B.x, B.y, B.z);*/
-
-  // for (float t = 0; t <= 2 * pi; t += 0.01) {
-  //   // vec3 v = f(A, B, t);
-  //   vec3 v = 5.0f * vec3(cos(t), sin(t), 0);
-  //   glVertex3d(v.x, v.y, v.z);
-  // }
-  //glEnd();
-
-
-  //glBegin(GL_POINTS); // нарисуем точки A и B
-  //glVertex3f(A.x, A.y, A.z);
-  //glVertex3f(B.x, B.y, B.z);
-  //glEnd();
-
-	
+void draw_second_order_bezier(float t_max) {
   vec3 P1 = {0, 0, 0};
   vec3 P2 = {-4, 6, 7};
   vec3 P3 = {10, 10, 0};
@@ -71,7 +43,7 @@ void Render(double delta_time) {
   draw(P2);
   draw(P3);
   glEnd();
-  
+
   glPointSize(10);
   glLineWidth(3);
   colorize(color.green);
@@ -83,10 +55,11 @@ void Render(double delta_time) {
   glBegin(GL_LINE_STRIP);
   for (float t = 0; t <= t_max; t += 0.01) {
 
-	  A = f(P1, P2, t);
-	  B = f(P2, P3, t);
-	  P = f(A, B, t);
-	  draw(P);
+    A = f(P1, P2, t);
+    B = f(P2, P3, t);
+    // P = f(A, B, t);
+    P = second_order_bezier(P1, P2, P3, t);
+    draw(P);
   }
   glEnd();
 
@@ -110,6 +83,38 @@ void Render(double delta_time) {
   draw(P2);
   draw(P3);
   glEnd();
+}
 
-  //glBegin(GL_POINTS);
+void Render(double delta_time) {
+  t_max += delta_time / 5;
+  if (t_max > 1)
+    t_max = 0;
+
+  draw_second_order_bezier(t_max);
+  // glm::vec3 v = {1, 2, 3};
+
+  // glBegin(GL_POINTS);
+  // glColor3d(1, 0, 0);
+
+  // glVertex3f(v.x, v.y, v.z);
+  // glEnd();
+
+  /*vec3 A = {1, 3, 4};
+  vec3 B = {4, 6, 7};
+
+  glBegin(GL_LINE_STRIP);
+  glVertex3f(A.x, A.y, A.z);
+  glVertex3f(B.x, B.y, B.z);*/
+
+  // for (float t = 0; t <= 2 * pi; t += 0.01) {
+  //   // vec3 v = f(A, B, t);
+  //   vec3 v = 5.0f * vec3(cos(t), sin(t), 0);
+  //   glVertex3d(v.x, v.y, v.z);
+  // }
+  // glEnd();
+
+  // glBegin(GL_POINTS); // нарисуем точки A и B
+  // glVertex3f(A.x, A.y, A.z);
+  // glVertex3f(B.x, B.y, B.z);
+  // glEnd();
 }
