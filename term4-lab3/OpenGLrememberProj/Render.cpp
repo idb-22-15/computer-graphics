@@ -181,29 +181,29 @@ int factorial(const int n) {
 }
 
 float bernstein(float u, int n, int i) {
-  return factorial(n) / float(factorial(i) * factorial(n - i)) //
-         * std::pow(u, i) * std::pow(1 - u, n - i);
+  return factorial(n) / float(factorial(i) * factorial(n - i)) * //
+         std::pow(u, i) * std::pow(1 - u, n - i);
 }
 
-vec3 bezier_surface(std::vector<std::vector<vec3>> ps, float u, float v) {
+vec3 bezier_surface(std::vector<std::vector<vec3>> &ps, float u, float v) {
   int n = ps.size();
   int m = ps[0].size();
 
   vec3 sum = {0, 0, 0};
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
-      sum += bernstein(u, n, i) * bernstein(u, m, j) * ps[i][j];
+      sum += bernstein(u, n, i) * bernstein(v, m, j) * ps[i][j];
     }
   }
   return sum;
 }
 
-void draw_bezier_surface(std::vector<std::vector<vec3>> ps, float t_max) {
+void draw_bezier_surface(std::vector<std::vector<vec3>> &ps, float t_max) {
   int n = ps.size();
   int m = ps[0].size();
 
-  colorize(color.black);
-  glPointSize(3);
+  colorize(color.red);
+  glPointSize(5);
   glBegin(GL_POINTS);
   for (auto &row : ps) {
     for (auto &p : row) {
@@ -219,11 +219,31 @@ void draw_bezier_surface(std::vector<std::vector<vec3>> ps, float t_max) {
       vec3 bottom_left = ps[i + 1][j];
       vec3 bottom_right = ps[i + 1][j + 1];
 
-      glBegin(GL_LINE_STRIP);
+      glBegin(GL_LINE_LOOP);
       draw(top_left);
       draw(top_right);
       draw(bottom_left);
       draw(bottom_right);
+      glEnd();
+    }
+  }
+
+  float step = 0.1;
+  for (float u = 0; u < 1 - step; u += step) {
+    for (float v = 0; v < 1 - step; v += step) {
+      vec3 c = color.black + v / 0.7f + u / 0.7f;
+      colorize(c);
+
+      vec3 top_left = bezier_surface(ps, u, v);
+      vec3 top_right = bezier_surface(ps, u, v + step);
+      vec3 bottom_left = bezier_surface(ps, u + step, v);
+      vec3 bottom_right = bezier_surface(ps, u + step, v + step);
+
+      glBegin(GL_POLYGON);
+      draw(top_left);
+      draw(top_right);
+      draw(bottom_right);
+      draw(bottom_left);
       glEnd();
     }
   }
@@ -247,11 +267,10 @@ void Render(double delta_time) {
   // draw_hermite(p0 * 2.0f, p1 / 3.0f, p2 * -1.0f, p3 + 5.0f, t_max);
 
   std::vector<std::vector<vec3>> ps = {
-      {{-5, 5, 0}, {-3, 3, 3}, {3, 3, 3}, {5, 5, 0}},
-      {{-2, 2, 4}, {-1, 3, 6}, {1, 3, 6}, {5, 5, 4}},
-      {{-2, -2, 4}, {-1, -3, 6}, {1, -3, 6}, {2, -2, 4}},
-      {{-5, -5, 0}, {-3, -3, 3}, {3, -3, 3}, {5, -5, 0}},
-
+      {{0, 0, 3}, {6, 0, -3.5}, {9, 0, 6}, {20, 0, 0.5}},    //
+      {{0, 5, 3}, {10, 6, -2.5}, {12, 5, 12}, {20, 5, 0.5}}, //
+      {{0, 10, 0}, {6, 12, 3.5}, {9, 10, 6}, {20, 10, 4.5}}, //
+      {{0, 15, 0}, {6, 15, -3.5}, {9, 18, 6}, {20, 15, 4.5}} //
   };
 
   draw_bezier_surface(ps, t_max);
