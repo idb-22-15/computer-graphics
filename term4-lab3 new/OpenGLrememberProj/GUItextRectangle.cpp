@@ -1,8 +1,9 @@
+#include <windows.h>
+
 #include "GUItextRectangle.h"
 #include <algorithm>
 
 #include <gl\GL.h>
-#include <windows.h>
 
 class GuiTextRectanglePrivate {
 public:
