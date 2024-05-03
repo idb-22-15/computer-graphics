@@ -3,15 +3,14 @@
 
 #include "MyVector3d.h"
 
-//луч
-class Ray
-{
+// пїЅпїЅпїЅ
+class Ray {
 public:
-	//точка начала
-	Vector3 origin;
+  // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+  Vector3 origin;
 
-	//напрввление
-	Vector3 direction;
+  // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  Vector3 direction;
 };
 
 #endif

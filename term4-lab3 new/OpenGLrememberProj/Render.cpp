@@ -214,8 +214,10 @@ void initRender(OpenGL *ogl) {
 }
 
 // !======================================================================
+float delta_time = 0;
 
 void Render(OpenGL *ogl) {
+  delta_time += 0.0001   ;
   glDisable(GL_TEXTURE_2D);
   glDisable(GL_LIGHTING);
 
@@ -244,7 +246,7 @@ void Render(OpenGL *ogl) {
 
   // !=========================================
 
-  task(0.0);
+  task(delta_time);
 
   // !=========================================
 
