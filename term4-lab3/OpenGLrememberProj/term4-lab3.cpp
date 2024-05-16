@@ -401,9 +401,9 @@ void task(float delta_time) {
   }
 
   vec3 p0 = {0, 0, 0};
-  vec3 p1 = {-4, 6, 7};
-  vec3 p2 = {10, 10, 0};
-  vec3 p3 = {5, 5, 5};
+  vec3 p1 = {-4, -7, 7};
+  vec3 p2 = {10, 30, 0};
+  vec3 p3 = {5, 5, 20};
 
   draw_third_order_bezier(p0, p1, p2, p3, t_max);
   draw_third_order_bezier(p0 * 2.0f, p1 / 3.0f, p2 * -1.0f, p3 + 5.0f, t_max);
