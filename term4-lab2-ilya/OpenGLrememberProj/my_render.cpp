@@ -6,14 +6,37 @@
 #include <GL\GLU.h>
 
 #include "./glm/glm.hpp"
+#include "glm/geometric.hpp"
 
 using glm::vec3;
 using std::vector;
 const float pi = 3.14159265;
 
 void draw(vec3 v) { glVertex3f(v.x, v.y, v.z); }
-void colorize(vec3 v) { glColor3f(v.x, v.y, v.z); }
+void set_color(vec3 v) { glColor3f(v.x, v.y, v.z); }
+void set_color(vec3 v, float alpha) { glColor4f(v.x, v.y, v.z, alpha); }
 vec3 rgb_to_gl(vec3 v) { return vec3(v.x / 255., v.y / 255., v.z / 255.); };
+
+void set_normal(vec3 v) { glNormal3f(v.x, v.y, v.z); }
+void set_tex(vec3 v) { glTexCoord3f(v.x, v.y, v.z); }
+
+vec3 normal_to_triangle(const vec3 &v1, const vec3 &v2, const vec3 &v3) {
+  // vec3 a = v2 - v1;
+  // vec3 b = v3 - v1;
+  // vec3 n = glm::normalize(glm::cross(a, b));
+  // return n;
+
+  vec3 a = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
+  vec3 b = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
+
+  // ������� ������� ��� ��������� ������������ ���� ���� ������
+  vec3 normal = {a[1] * b[2] - b[1] * a[2],  //
+                 -a[0] * b[2] + b[0] * a[2], //
+                 a[0] * b[1] - b[0] * a[1]}; //
+
+  // ����������� �������, ����� �������� ��������� ������
+  return glm::normalize(normal);
+}
 
 vector<vec3> make_circle(vec3 center, float radius, float start_angle,
                          float end_angle) {
@@ -30,17 +53,11 @@ vector<vec3> make_circle(vec3 center, float radius, float start_angle,
   return circle;
 }
 
-double get_angle_in_rad(vec3 start, vec3 end) {
-  vec3 v = vec3(start[0] - end[0], start[1] - end[1], start[2]);
-  double angle_in_rad = std::atan2(v[1], v[0]);
-  return angle_in_rad;
-}
+void my_render(GLint texId) {
+  vec3 normal_top = {0, 0, 1};
+  vec3 normal_bottom = {0, 0, -1};
+  const int textCell = 20;
 
-double normalize_angle_in_rad(float angle) {
-  return (2 * pi + angle) / (2 * pi);
-}
-
-void my_render(double delta_time) {
   vector<vec3> vs = {
       {2, 0, 0},  // 0
       {4, 5, 0},  // 1
@@ -61,77 +78,13 @@ void my_render(double delta_time) {
   vec3 color_cover = rgb_to_gl(vec3(194, 239, 235));
   vec3 color_wall = rgb_to_gl(vec3(158, 229, 223));
 
-  // bottom
-  colorize(color_cover);
-
-  glBegin(GL_TRIANGLES);
-  draw(vs[0]);
-  draw(vs[1]);
-  draw(vs[7]);
-
-  draw(vs[1]);
-  draw(vs[2]);
-  draw(vs[3]);
-
-  draw(vs[1]);
-  draw(vs[3]);
-  draw(vs[4]);
-
-  draw(vs[1]);
-  draw(vs[4]);
-  draw(vs[5]);
-
-  draw(vs[1]);
-  draw(vs[5]);
-  draw(vs[6]);
-
-  draw(vs[1]);
-  draw(vs[5]);
-  draw(vs[7]);
-
-  draw(vs[5]);
-  draw(vs[6]);
-  draw(vs[7]);
-  glEnd();
-
-  // top
-
-  glBegin(GL_TRIANGLES);
-  draw(vs_h[0]);
-  draw(vs_h[1]);
-  draw(vs_h[7]);
-
-  draw(vs_h[1]);
-  draw(vs_h[2]);
-  draw(vs_h[3]);
-
-  draw(vs_h[1]);
-  draw(vs_h[3]);
-  draw(vs_h[4]);
-
-  draw(vs_h[1]);
-  draw(vs_h[4]);
-  draw(vs_h[5]);
-
-  draw(vs_h[1]);
-  draw(vs_h[5]);
-  draw(vs_h[6]);
-
-  draw(vs_h[1]);
-  draw(vs_h[5]);
-  draw(vs_h[7]);
-
-  draw(vs_h[5]);
-  draw(vs_h[6]);
-  draw(vs_h[7]);
-  glEnd();
+  glBindTexture(GL_TEXTURE_2D, texId);
 
   // walls
-  colorize(color_wall);
   for (int i = 0; i < vs.size(); i++) {
     int nextI = (i + 1) % vs.size();
-
     glBegin(GL_QUADS);
+    set_color(color_wall);
     draw(vs[i]);
     draw(vs[nextI]);
     draw(vs_h[nextI]);
@@ -153,16 +106,19 @@ void my_render(double delta_time) {
   std::vector<vec3> circle =
       make_circle(center, radius, start_angle, end_angle);
 
-  // bottom
+  // circle bottom
   glBegin(GL_TRIANGLE_FAN);
-  colorize(color_cover_green);
+  set_color(color_cover_green);
+  set_normal(normal_bottom);
+  set_tex(center);
   draw(center);
   for (vec3 &v : circle) {
+    set_tex(v);
     draw(v);
   }
   glEnd();
 
-  // top
+  // circle top
   vec3 center_h = vec3(center[0], center[1], h);
   std::vector<vec3> circle_h = {};
   for (vec3 &v : circle) {
@@ -170,23 +126,148 @@ void my_render(double delta_time) {
   }
 
   glBegin(GL_TRIANGLE_FAN);
+  set_normal(normal_top);
+  set_color(color_cover, 0.5);
+  set_tex(center_h);
   draw(center_h);
   for (vec3 &v : circle_h) {
+    set_tex(v);
     draw(v);
   }
   glEnd();
 
-  // wall
-  colorize(color_wall_green);
+  // circle wall
   int circle_dots = circle.size();
   for (int i = 0; i < circle_dots; i++) {
     int nextI = (i + 1) % circle_dots;
+    vec3 normal = normal_to_triangle(circle_h[i], circle[nextI], circle[i]);
+    normal[0] = -normal[0];
+    normal[1] = -normal[1];
 
+    vec3 a = circle[nextI] - circle[i];
+    vec3 b = circle_h[i] - circle[i];
+    vec3 n = glm::normalize(glm::cross(a, b));
+    set_normal(n);
     glBegin(GL_QUADS);
+    set_color(color_wall_green);
+    // set_normal(normal);
     draw(circle[i]);
     draw(circle[nextI]);
     draw(circle_h[nextI]);
     draw(circle_h[i]);
     glEnd();
   }
+
+  // bottom
+
+  glBegin(GL_TRIANGLES);
+  set_color(color_cover);
+  set_normal(normal_bottom);
+
+  set_tex(vs[0]);
+  draw(vs[0]);
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[7]);
+  draw(vs[7]);
+
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[2]);
+  draw(vs[2]);
+  set_tex(vs[3]);
+  draw(vs[3]);
+
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[3]);
+  draw(vs[3]);
+  set_tex(vs[4]);
+  draw(vs[4]);
+
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[4]);
+  draw(vs[4]);
+  set_tex(vs[5]);
+  draw(vs[5]);
+
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[5]);
+  draw(vs[5]);
+  set_tex(vs[6]);
+  draw(vs[6]);
+
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[5]);
+  draw(vs[5]);
+  set_tex(vs[7]);
+  draw(vs[7]);
+
+  set_tex(vs[5]);
+  draw(vs[5]);
+  set_tex(vs[6]);
+  draw(vs[6]);
+  set_tex(vs[7]);
+  draw(vs[7]);
+  glEnd();
+
+  // top
+
+  glBegin(GL_TRIANGLES);
+  set_color(color_cover, 0.5);
+  set_normal(normal_top);
+  set_color(color_cover);
+
+  set_tex(vs[0]);
+  draw(vs[0]);
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[7]);
+  draw(vs[7]);
+
+  set_tex(vs[1]);
+  draw(vs[1]);
+  set_tex(vs[2]);
+  draw(vs[2]);
+  set_tex(vs[3]);
+  draw(vs[3]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[3]);
+  draw(vs_h[3]);
+  set_tex(vs_h[4]);
+  draw(vs_h[4]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[4]);
+  draw(vs_h[4]);
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+  set_tex(vs_h[6]);
+  draw(vs_h[6]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+  set_tex(vs_h[7]);
+  draw(vs_h[7]);
+
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+  set_tex(vs_h[6]);
+  draw(vs_h[6]);
+  set_tex(vs_h[7]);
+  draw(vs_h[7]);
+  glEnd();
 }

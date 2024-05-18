@@ -1,185 +1,152 @@
 #ifndef MYOGL_H
 #define MYOGL_H
 
-#pragma warning( disable : 4305 )
-#pragma warning( disable : 4244 )
-
-#include <string>
-#include <vector>
-#include "MyVector3d.h"
+#pragma warning(disable : 4305)
+#pragma warning(disable : 4244)
 
 #include <windows.h>
-#include <gl/GL.h>
+
+#include "MyVector3d.h"
+#include <string>
+#include <vector>
+
 #include "gl/GLU.h"
+#include <gl/GL.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
 
 class OpenGL;
 
-
-//òèï äëÿ äåëåãàòà void f (void)
-typedef void(*action)(OpenGL *) ;
-typedef void(*MouseEventDelegate)(OpenGL *,int,int);
-typedef void(*WheelEventDelegate)(OpenGL *, int);
-typedef void(*KeyEventDelegate)(OpenGL*, int);
+// òèï äëÿ äåëåãàòà void f (void)
+typedef void (*action)(OpenGL *);
+typedef void (*MouseEventDelegate)(OpenGL *, int, int);
+typedef void (*WheelEventDelegate)(OpenGL *, int);
+typedef void (*KeyEventDelegate)(OpenGL *, int);
 
 class Camera;
 class Light;
 
-class OpenGL
-{
-	HWND g_hWnd;
-	HDC g_hDC;
-	HGLRC g_hRC;
-	int width, height;
-	
-
-	
-
+class OpenGL {
+  HWND g_hWnd;
+  HDC g_hDC;
+  HGLRC g_hRC;
+  int width, height;
 
 public:
-	//ôóíêöèè ðåíäåðà
-	std::vector < action > renderFunc;
-	//ôóíêöèè èíèöèàëèçàöèè
-	std::vector < action > initFunc;
-	
-	std::vector <MouseEventDelegate>  mouseFunc;
-	std::vector <WheelEventDelegate>  wheelFunc;
-	std::vector <KeyEventDelegate>  keyDownFunc;
-	std::vector <KeyEventDelegate>  keyUpFunc;
+  // ôóíêöèè ðåíäåðà
+  std::vector<action> renderFunc;
+  // ôóíêöèè èíèöèàëèçàöèè
+  std::vector<action> initFunc;
 
-	Camera *mainCamera;
-	Light *mainLight;
+  std::vector<MouseEventDelegate> mouseFunc;
+  std::vector<WheelEventDelegate> wheelFunc;
+  std::vector<KeyEventDelegate> keyDownFunc;
+  std::vector<KeyEventDelegate> keyUpFunc;
 
-	int getWidth()
-	{
-		return width;
-	}
+  Camera *mainCamera;
+  Light *mainLight;
 
-	int getHeight()
-	{
-		return height;
-	}
-	HWND getHwnd()
-	{
-		return g_hWnd;
-	}
+  int getWidth() { return width; }
 
-	OpenGL();
-	~OpenGL();
+  int getHeight() { return height; }
+  HWND getHwnd() { return g_hWnd; }
 
-	void setHWND(HWND window);
-	
+  OpenGL();
+  ~OpenGL();
 
-	int OldMouseX, OldMouseY;
-	void mouseMovie(int mX, int mY);
-	void wheelEvent(float delta);
-	void keyDownEvent(int key);
-	void keyUpEvent(int key);
+  void setHWND(HWND window);
 
-	void DrawAxes();
+  int OldMouseX, OldMouseY;
+  void mouseMovie(int mX, int mY);
+  void wheelEvent(float delta);
+  void keyDownEvent(int key);
+  void keyUpEvent(int key);
 
-	void render();
-	void resize(int w, int h);
-	void init(void);
+  void DrawAxes();
 
-	std::string message;
+  void render();
+  void resize(int w, int h);
+  void init(void);
 
-	static bool isKeyPressed(int key)
-	{
-		short state = GetAsyncKeyState(key);
+  std::string message;
 
-		return (bool)(state & 0x8000);
-	}
+  static bool isKeyPressed(int key) {
+    short state = GetAsyncKeyState(key);
 
+    return (bool)(state & 0x8000);
+  }
 
-	void setTextureText(const char* text, char r, char g , char b );
+  void setTextureText(const char *text, char r, char g, char b);
 
-	//çàãðóçêà BMP èç ôàéëà,
-	static int LoadBMP(__in LPCSTR  filename, __out int* Wigth, __out int *Height, __out RGBTRIPLE **arr)
-	{
-		DWORD nBytesRead = 0;
-		int read_size = 0;
-		int i = 0;
-		int width, height, size;
-		BITMAPINFOHEADER infoh;
-		BITMAPFILEHEADER fileh;
-				
-		HANDLE file = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+  // çàãðóçêà BMP èç ôàéëà,
+  static int LoadBMP(__in LPCSTR filename, __out int *Wigth, __out int *Height,
+                     __out RGBTRIPLE **arr) {
+    DWORD nBytesRead = 0;
+    int read_size = 0;
+    int i = 0;
+    int width, height, size;
+    BITMAPINFOHEADER infoh;
+    BITMAPFILEHEADER fileh;
 
+    HANDLE file = CreateFile(filename, GENERIC_READ, 0, NULL, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL, NULL);
 
-		//Ñ÷èòûâàåì çàãîëîâêè BMP ôàéëà
-		ReadFile((HANDLE)file, &fileh, sizeof(BITMAPFILEHEADER), &nBytesRead, 0);
-		ReadFile((HANDLE)file, &infoh, sizeof(BITMAPINFOHEADER), &nBytesRead, 0);
+    // Ñ÷èòûâàåì çàãîëîâêè BMP ôàéëà
+    ReadFile((HANDLE)file, &fileh, sizeof(BITMAPFILEHEADER), &nBytesRead, 0);
+    ReadFile((HANDLE)file, &infoh, sizeof(BITMAPINFOHEADER), &nBytesRead, 0);
 
-		/*
-		Ïîäðîáíåå î çàãîëîâêàõ https://msdn.microsoft.com/ru-ru/library/windows/desktop/dd183374(v=vs.85).aspx
-		                       https://msdn.microsoft.com/ru-ru/library/windows/desktop/dd183376(v=vs.85).aspx
+    /*
+    Ïîäðîáíåå î çàãîëîâêàõ
+    https://msdn.microsoft.com/ru-ru/library/windows/desktop/dd183374(v=vs.85).aspx
+                           https://msdn.microsoft.com/ru-ru/library/windows/desktop/dd183376(v=vs.85).aspx
 
-		*/
+    */
 
-		width = infoh.biWidth;
-		height = infoh.biHeight;
-		*Wigth = width;
-		*Height = height;
-		
+    width = infoh.biWidth;
+    height = infoh.biHeight;
+    *Wigth = width;
+    *Height = height;
 
-		//
-		size = width * 3 + width % 4;
-		size = size * height;
-		nBytesRead = fileh.bfOffBits;
-		*arr = (RGBTRIPLE *)malloc(size);
+    //
+    size = width * 3 + width % 4;
+    size = size * height;
+    nBytesRead = fileh.bfOffBits;
+    *arr = (RGBTRIPLE *)malloc(size);
 
-		while (read_size < size)
-		{
-			ReadFile(file, *arr + i, sizeof(RGBTRIPLE), &nBytesRead, 0);
-			read_size += nBytesRead;
-			i++;
-		}
-		CloseHandle(file);
-		return 1;
+    while (read_size < size) {
+      ReadFile(file, *arr + i, sizeof(RGBTRIPLE), &nBytesRead, 0);
+      read_size += nBytesRead;
+      i++;
+    }
+    CloseHandle(file);
+    return 1;
+  }
 
-	}
+  // Ïåðåâîäèì BMP â ìàññèâ ÷àðîîâ.  Îäèí ïèêñàëü êîäèðóåòñÿ ïîñëåäîâàòåëüíî 4ìÿ
+  // áàéòàìè (R G B A) Òàê æå òóò êàðòèíêà ïåðåâîðà÷èâàåòñÿ, â BMP îíà õðàíèòñÿ
+  // ïåðåâåðíóòîé.
+  static int RGBtoChar(__in RGBTRIPLE *arr, __in int width, __in int height,
+                       __out char **out) {
+    int size = height * width * 4;
+    char *mas;
+    if (width <= 0 || height <= 0) {
+      return 0;
+    }
 
+    mas = (char *)malloc(size * sizeof(char));
+    for (int i = height - 1; i >= 0; i--)
+      for (int j = 0; j < width; j++) {
+        *(mas + i * width * 4 + j * 4 + 0) = arr[(i)*width + j].rgbtRed;
+        *(mas + i * width * 4 + j * 4 + 1) = arr[(i)*width + j].rgbtGreen;
+        *(mas + i * width * 4 + j * 4 + 2) = arr[(i)*width + j].rgbtBlue;
+        *(mas + i * width * 4 + j * 4 + 3) = 255;
+      }
+    *out = mas;
+    return 1;
+  }
 
-	//Ïåðåâîäèì BMP â ìàññèâ ÷àðîîâ.  Îäèí ïèêñàëü êîäèðóåòñÿ ïîñëåäîâàòåëüíî 4ìÿ áàéòàìè (R G B A)
-	//Òàê æå òóò êàðòèíêà ïåðåâîðà÷èâàåòñÿ, â BMP îíà õðàíèòñÿ ïåðåâåðíóòîé.
-	static int RGBtoChar(__in RGBTRIPLE *arr, __in int width, __in int height, __out char **out)
-	{
-		int size = height*width * 4;
-		char *mas;
-		if (width <= 0 || height <= 0)
-		{
-			return 0;
-		}
-
-		mas = (char *)malloc(size*sizeof(char));
-		for (int i = height - 1; i >= 0; i--)
-			for (int j = 0; j < width; j++)
-			{
-				*(mas + i*width * 4 + j * 4 + 0) = arr[(i)*width + j].rgbtRed;
-				*(mas + i*width * 4 + j * 4 + 1) = arr[(i)*width + j].rgbtGreen;
-				*(mas + i*width * 4 + j * 4 + 2) = arr[(i)*width + j].rgbtBlue;
-				*(mas + i*width * 4 + j * 4 + 3) = 0;
-			}
-		*out = mas;
-		return 1;
-
-	}
-
-	
-	static void drawSphere()
-	{
-
-	}
-
+  static void drawSphere() {}
 };
-
-
-
-
-
-
 
 #endif

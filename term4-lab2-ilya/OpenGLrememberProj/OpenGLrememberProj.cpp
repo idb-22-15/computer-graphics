@@ -1,5 +1,6 @@
 // OpenGLrememberProj.cpp: определяет точку входа для приложения.
 //
+#include <windows.h>
 
 #include "OpenGLrememberProj.h"
 
@@ -9,7 +10,6 @@
                             // заголовков Windows
 
 // Файлы заголовков Windows:
-#include <windows.h>
 
 // Файлы заголовков C RunTime
 #include <malloc.h>
