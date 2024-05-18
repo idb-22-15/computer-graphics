@@ -11,6 +11,7 @@
 using glm::vec3;
 using std::vector;
 const float pi = 3.14159265;
+const float texCell = 0.05;
 
 void draw(vec3 v) { glVertex3f(v.x, v.y, v.z); }
 void set_color(vec3 v) { glColor3f(v.x, v.y, v.z); }
@@ -18,24 +19,16 @@ void set_color(vec3 v, float alpha) { glColor4f(v.x, v.y, v.z, alpha); }
 vec3 rgb_to_gl(vec3 v) { return vec3(v.x / 255., v.y / 255., v.z / 255.); };
 
 void set_normal(vec3 v) { glNormal3f(v.x, v.y, v.z); }
-void set_tex(vec3 v) { glTexCoord3f(v.x, v.y, v.z); }
+void set_tex(vec3 v) {
+  v = v * texCell;
+  glTexCoord3f(v.x, v.y, v.z);
+}
 
 vec3 normal_to_triangle(const vec3 &v1, const vec3 &v2, const vec3 &v3) {
-  // vec3 a = v2 - v1;
-  // vec3 b = v3 - v1;
-  // vec3 n = glm::normalize(glm::cross(a, b));
-  // return n;
-
-  vec3 a = {v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
-  vec3 b = {v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
-
-  // ������� ������� ��� ��������� ������������ ���� ���� ������
-  vec3 normal = {a[1] * b[2] - b[1] * a[2],  //
-                 -a[0] * b[2] + b[0] * a[2], //
-                 a[0] * b[1] - b[0] * a[1]}; //
-
-  // ����������� �������, ����� �������� ��������� ������
-  return glm::normalize(normal);
+  vec3 a = v2 - v1;
+  vec3 b = v3 - v1;
+  vec3 n = glm::normalize(glm::cross(a, b));
+  return n;
 }
 
 vector<vec3> make_circle(vec3 center, float radius, float start_angle,
@@ -56,7 +49,6 @@ vector<vec3> make_circle(vec3 center, float radius, float start_angle,
 void my_render(GLint texId) {
   vec3 normal_top = {0, 0, 1};
   vec3 normal_bottom = {0, 0, -1};
-  const int textCell = 20;
 
   vector<vec3> vs = {
       {2, 0, 0},  // 0
@@ -93,16 +85,18 @@ void my_render(GLint texId) {
     draw(vs_h[i]);
     glEnd();
 
-    glBegin(GL_LINES);
-    draw(vs[i]);
-    draw(vs[i] + n);
-    draw(vs_h[i]);
-    draw(vs_h[i] + n);
-    draw(vs[nextI]);
-    draw(vs[nextI] + n);
-    draw(vs_h[nextI]);
-    draw(vs_h[nextI] + n);
-    glEnd();
+    // Нормали
+
+    // glBegin(GL_LINES);
+    // draw(vs[i]);
+    // draw(vs[i] + n);
+    // draw(vs_h[i]);
+    // draw(vs_h[i] + n);
+    // draw(vs[nextI]);
+    // draw(vs[nextI] + n);
+    // draw(vs_h[nextI]);
+    // draw(vs_h[nextI] + n);
+    // glEnd();
   }
 
   // circle
@@ -167,16 +161,18 @@ void my_render(GLint texId) {
     draw(circle_h[i]);
     glEnd();
 
-    glBegin(GL_LINES);
-    draw(circle[i]);
-    draw(circle[i] + n);
-    draw(circle_h[i]);
-    draw(circle_h[i] + n);
-    draw(circle[nextI]);
-    draw(circle[nextI] + n);
-    draw(circle_h[nextI]);
-    draw(circle_h[nextI] + n);
-    glEnd();
+    // Нормали
+
+    // glBegin(GL_LINES);
+    // draw(circle[i]);
+    // draw(circle[i] + n);
+    // draw(circle_h[i]);
+    // draw(circle_h[i] + n);
+    // draw(circle[nextI]);
+    // draw(circle[nextI] + n);
+    // draw(circle_h[nextI]);
+    // draw(circle_h[nextI] + n);
+    // glEnd();
   }
 
   // bottom
@@ -236,23 +232,57 @@ void my_render(GLint texId) {
   glEnd();
 
   // top
-  glBegin(GL_QUADS);
+  glBegin(GL_TRIANGLES);
   set_color(color_cover, 0.5);
   set_normal(normal_top);
 
+  set_tex(vs_h[0]);
   draw(vs_h[0]);
+  set_tex(vs_h[1]);
   draw(vs_h[1]);
-  draw(vs_h[6]);
+  set_tex(vs_h[7]);
   draw(vs_h[7]);
 
-  draw(vs_h[6]);
-  draw(vs_h[5]);
-  draw(vs_h[2]);
+  set_tex(vs_h[1]);
   draw(vs_h[1]);
-
+  set_tex(vs_h[2]);
   draw(vs_h[2]);
+  set_tex(vs_h[3]);
   draw(vs_h[3]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[3]);
+  draw(vs_h[3]);
+  set_tex(vs_h[4]);
   draw(vs_h[4]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[4]);
+  draw(vs_h[4]);
+  set_tex(vs_h[5]);
   draw(vs_h[5]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+  set_tex(vs_h[6]);
+  draw(vs_h[6]);
+
+  set_tex(vs_h[1]);
+  draw(vs_h[1]);
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+  set_tex(vs_h[7]);
+  draw(vs_h[7]);
+
+  set_tex(vs_h[5]);
+  draw(vs_h[5]);
+  set_tex(vs_h[6]);
+  draw(vs_h[6]);
+  set_tex(vs_h[7]);
+  draw(vs_h[7]);
   glEnd();
 }
