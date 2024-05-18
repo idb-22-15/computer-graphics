@@ -83,12 +83,25 @@ void my_render(GLint texId) {
   // walls
   for (int i = 0; i < vs.size(); i++) {
     int nextI = (i + 1) % vs.size();
+    vec3 n = normal_to_triangle(vs_h[i], vs[nextI], vs[i]);
     glBegin(GL_QUADS);
     set_color(color_wall);
+    set_normal(n);
     draw(vs[i]);
     draw(vs[nextI]);
     draw(vs_h[nextI]);
     draw(vs_h[i]);
+    glEnd();
+
+    glBegin(GL_LINES);
+    draw(vs[i]);
+    draw(vs[i] + n);
+    draw(vs_h[i]);
+    draw(vs_h[i] + n);
+    draw(vs[nextI]);
+    draw(vs[nextI] + n);
+    draw(vs_h[nextI]);
+    draw(vs_h[nextI] + n);
     glEnd();
   }
 
@@ -140,21 +153,29 @@ void my_render(GLint texId) {
   int circle_dots = circle.size();
   for (int i = 0; i < circle_dots; i++) {
     int nextI = (i + 1) % circle_dots;
-    vec3 normal = normal_to_triangle(circle_h[i], circle[nextI], circle[i]);
-    normal[0] = -normal[0];
-    normal[1] = -normal[1];
+    vec3 n = normal_to_triangle(circle_h[i], circle[nextI], circle[i]);
+    n[0] = -n[0];
+    n[1] = -n[1];
 
-    vec3 a = circle[nextI] - circle[i];
-    vec3 b = circle_h[i] - circle[i];
-    vec3 n = glm::normalize(glm::cross(a, b));
     set_normal(n);
     glBegin(GL_QUADS);
     set_color(color_wall_green);
-    // set_normal(normal);
+    set_normal(n);
     draw(circle[i]);
     draw(circle[nextI]);
     draw(circle_h[nextI]);
     draw(circle_h[i]);
+    glEnd();
+
+    glBegin(GL_LINES);
+    draw(circle[i]);
+    draw(circle[i] + n);
+    draw(circle_h[i]);
+    draw(circle_h[i] + n);
+    draw(circle[nextI]);
+    draw(circle[nextI] + n);
+    draw(circle_h[nextI]);
+    draw(circle_h[nextI] + n);
     glEnd();
   }
 
@@ -215,59 +236,23 @@ void my_render(GLint texId) {
   glEnd();
 
   // top
-
-  glBegin(GL_TRIANGLES);
+  glBegin(GL_QUADS);
   set_color(color_cover, 0.5);
   set_normal(normal_top);
-  set_color(color_cover);
 
-  set_tex(vs[0]);
-  draw(vs[0]);
-  set_tex(vs[1]);
-  draw(vs[1]);
-  set_tex(vs[7]);
-  draw(vs[7]);
-
-  set_tex(vs[1]);
-  draw(vs[1]);
-  set_tex(vs[2]);
-  draw(vs[2]);
-  set_tex(vs[3]);
-  draw(vs[3]);
-
-  set_tex(vs_h[1]);
+  draw(vs_h[0]);
   draw(vs_h[1]);
-  set_tex(vs_h[3]);
+  draw(vs_h[6]);
+  draw(vs_h[7]);
+
+  draw(vs_h[6]);
+  draw(vs_h[5]);
+  draw(vs_h[2]);
+  draw(vs_h[1]);
+
+  draw(vs_h[2]);
   draw(vs_h[3]);
-  set_tex(vs_h[4]);
   draw(vs_h[4]);
-
-  set_tex(vs_h[1]);
-  draw(vs_h[1]);
-  set_tex(vs_h[4]);
-  draw(vs_h[4]);
-  set_tex(vs_h[5]);
   draw(vs_h[5]);
-
-  set_tex(vs_h[1]);
-  draw(vs_h[1]);
-  set_tex(vs_h[5]);
-  draw(vs_h[5]);
-  set_tex(vs_h[6]);
-  draw(vs_h[6]);
-
-  set_tex(vs_h[1]);
-  draw(vs_h[1]);
-  set_tex(vs_h[5]);
-  draw(vs_h[5]);
-  set_tex(vs_h[7]);
-  draw(vs_h[7]);
-
-  set_tex(vs_h[5]);
-  draw(vs_h[5]);
-  set_tex(vs_h[6]);
-  draw(vs_h[6]);
-  set_tex(vs_h[7]);
-  draw(vs_h[7]);
   glEnd();
 }
