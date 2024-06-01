@@ -41,14 +41,14 @@ double normalize_angle_in_rad(float angle) {
 
 void my_render(double delta_time) {
   vector<vec3> vs = {
-      {2, 0, 0},  // 0
+      {2, 0, 0},  // 0 blue
       {4, 5, 0},  // 1
       {0, 6, 0},  // 2
       {0, 12, 0}, // 3 green
       {7, 14, 0}, // 4 green
       {6, 6, 0},  // 5
       {11, 4, 0}, // 6
-      {10, 0, 0}, // 7
+      {10, 0, 0}, // 7 blue
   };
 
   const float h = 3;
@@ -66,7 +66,7 @@ void my_render(double delta_time) {
   glBegin(GL_TRIANGLES);
   draw(vs[0]);
   draw(vs[1]);
-  draw(vs[7]);
+  draw(vs[5]);
 
   draw(vs[1]);
   draw(vs[2]);
@@ -84,10 +84,6 @@ void my_render(double delta_time) {
   draw(vs[5]);
   draw(vs[6]);
 
-  draw(vs[1]);
-  draw(vs[5]);
-  draw(vs[7]);
-
   draw(vs[5]);
   draw(vs[6]);
   draw(vs[7]);
@@ -98,7 +94,7 @@ void my_render(double delta_time) {
   glBegin(GL_TRIANGLES);
   draw(vs_h[0]);
   draw(vs_h[1]);
-  draw(vs_h[7]);
+  draw(vs_h[5]);
 
   draw(vs_h[1]);
   draw(vs_h[2]);
@@ -116,10 +112,6 @@ void my_render(double delta_time) {
   draw(vs_h[5]);
   draw(vs_h[6]);
 
-  draw(vs_h[1]);
-  draw(vs_h[5]);
-  draw(vs_h[7]);
-
   draw(vs_h[5]);
   draw(vs_h[6]);
   draw(vs_h[7]);
@@ -128,6 +120,9 @@ void my_render(double delta_time) {
   // walls
   colorize(color_wall);
   for (int i = 0; i < vs.size(); i++) {
+    if (i == vs.size() - 1)
+      continue;
+
     int nextI = (i + 1) % vs.size();
 
     glBegin(GL_QUADS);
@@ -138,54 +133,106 @@ void my_render(double delta_time) {
     glEnd();
   }
 
-  // circle
+  // circle green
   vec3 color_cover_green = rgb_to_gl(vec3(46, 196, 183));
   vec3 color_wall_green = rgb_to_gl(vec3(43, 182, 168));
-  vec3 line = vec3((vs[4][0] - vs[3][0]), (vs[4][1] - vs[3][1]), 0);
-  vec3 center = vec3((vs[4][0] + vs[3][0]) / 2., (vs[4][1] + vs[3][1]) / 2., 0);
-  float radius =
-      std::sqrt(std::pow(line[0] / 2., 2) + std::pow(line[1] / 2., 2));
+  vec3 g_line = vec3((vs[4][0] - vs[3][0]), (vs[4][1] - vs[3][1]), 0);
+  vec3 g_center =
+      vec3((vs[4][0] + vs[3][0]) / 2., (vs[4][1] + vs[3][1]) / 2., 0);
+  float g_radius =
+      std::sqrt(std::pow(g_line[0] / 2., 2) + std::pow(g_line[1] / 2., 2));
 
-  float small_angle = 0.088;
-  float start_angle = pi * small_angle;
-  float end_angle = pi + pi * small_angle;
-  std::vector<vec3> circle =
-      make_circle(center, radius, start_angle, end_angle);
+  float g_small_angle = 0.088;
+  float g_start_angle = pi * g_small_angle;
+  float g_end_angle = pi + pi * g_small_angle;
+  std::vector<vec3> g_circle =
+      make_circle(g_center, g_radius, g_start_angle, g_end_angle);
 
-  // bottom
+  // circle green bottom
   glBegin(GL_TRIANGLE_FAN);
   colorize(color_cover_green);
-  draw(center);
-  for (vec3 &v : circle) {
+  draw(g_center);
+  for (vec3 &v : g_circle) {
     draw(v);
   }
   glEnd();
 
-  // top
-  vec3 center_h = vec3(center[0], center[1], h);
-  std::vector<vec3> circle_h = {};
-  for (vec3 &v : circle) {
-    circle_h.push_back(vec3(v[0], v[1], h));
+  // circle green top
+  vec3 g_center_h = vec3(g_center[0], g_center[1], h);
+  std::vector<vec3> g_circle_h = {};
+  for (vec3 &v : g_circle) {
+    g_circle_h.push_back(vec3(v[0], v[1], h));
   }
 
   glBegin(GL_TRIANGLE_FAN);
-  draw(center_h);
-  for (vec3 &v : circle_h) {
+  draw(g_center_h);
+  for (vec3 &v : g_circle_h) {
     draw(v);
   }
   glEnd();
 
-  // wall
+  // circle green wall
   colorize(color_wall_green);
-  int circle_dots = circle.size();
-  for (int i = 0; i < circle_dots; i++) {
-    int nextI = (i + 1) % circle_dots;
+  int g_circle_dots = g_circle.size();
+  for (int i = 0; i < g_circle_dots; i++) {
+    int nextI = (i + 1) % g_circle_dots;
 
     glBegin(GL_QUADS);
-    draw(circle[i]);
-    draw(circle[nextI]);
-    draw(circle_h[nextI]);
-    draw(circle_h[i]);
+    draw(g_circle[i]);
+    draw(g_circle[nextI]);
+    draw(g_circle_h[nextI]);
+    draw(g_circle_h[i]);
+    glEnd();
+  }
+  colorize(color_cover);
+
+  // circle blue
+  vec3 color_cover_blue = rgb_to_gl(vec3(42, 148, 223));
+  vec3 color_wall_blue = rgb_to_gl(vec3(27, 115, 177));
+  vec3 b_center = {6, -3, 0};
+  float b_radius = 5;
+
+  float b_angle = 0.645;
+  float b_start_angle = b_angle;
+  float b_end_angle = pi - b_angle;
+  std::vector<vec3> b_circle =
+      make_circle(b_center, b_radius, b_start_angle, b_end_angle);
+
+  // circle blue bottom
+  glBegin(GL_TRIANGLE_FAN);
+  draw(vs[5]);
+  for (vec3 &v : b_circle) {
+    draw(v);
+  }
+  glEnd();
+
+  // circle blue top
+  vec3 b_center_h = vec3(b_center[0], b_center[1], h);
+  std::vector<vec3> b_circle_h = {};
+  for (vec3 &v : b_circle) {
+    b_circle_h.push_back(vec3(v[0], v[1], h));
+  }
+
+  glBegin(GL_TRIANGLE_FAN);
+  draw(vs_h[5]);
+  for (vec3 &v : b_circle_h) {
+    draw(v);
+  }
+  glEnd();
+
+  // circle blue wall
+  colorize(color_wall_blue);
+  int b_circle_dots = b_circle.size();
+  for (int i = 0; i < b_circle_dots; i++) {
+    if (i == b_circle_dots - 1)
+      continue;
+    int nextI = (i + 1) % b_circle_dots;
+
+    glBegin(GL_QUADS);
+    draw(b_circle[i]);
+    draw(b_circle[nextI]);
+    draw(b_circle_h[nextI]);
+    draw(b_circle_h[i]);
     glEnd();
   }
 }
