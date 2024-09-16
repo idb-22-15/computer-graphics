@@ -97,7 +97,6 @@ cylinder {
   }
 }
 
-
 #declare HouseWalls = union {
   object { HouseWall }
   box {
@@ -115,6 +114,31 @@ cylinder {
   }
   object { 
     HouseWall
+    rotate <0, 270, 0>
+  }
+}
+
+
+
+#declare FenceWall =
+  object {
+    HouseWall
+    scale <1.5, 0.4, 1>
+    translate<0, 0, 2.5>
+  }
+
+#declare Fence = union {
+  object { FenceWall }
+  object {
+    FenceWall
+    rotate <0, 90, 0>
+  }
+  object {
+    FenceWall
+    rotate <0, 180, 0>
+  }
+  object {
+    FenceWall
     rotate <0, 270, 0>
   }
 }
@@ -206,9 +230,8 @@ prism {
 }
 
 object { Home }
-
 object { Ground }
-
+object { Fence }
 object { 
   Cheese
   scale 0.5
