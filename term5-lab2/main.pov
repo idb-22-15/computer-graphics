@@ -1,5 +1,22 @@
 #include "colors.inc"    
 
+// camera 1
+
+camera {
+  angle 80
+  location <3, 2, -3>
+  look_at 0
+  scale 1.5
+}
+
+// camera 2
+
+// camera {
+//   angle 80
+//   location <4, 1.5, -5>
+//   look_at 0
+// }
+
 background{ 
   rgb<0.2,0.2,0.4>
 }
@@ -8,39 +25,6 @@ light_source {
   <10,30,-3> 
   color White
 }
-
-
-light_source {
-  <-7, 20, -5> 
-  color Yellow
-}
-
-
-// sky_sphere {
-//   pigment {
-//     gradient y
-//     color_map {
-//       [0 color White]
-//       [1 color Blue]
-//     }
-//   }
-// }
-
-// camera 1
-
-camera {
-  angle 80
-  location <2, 2, -2>
-  look_at 0
-}
-
-// camera 2
-
-// camera {
-//   angle 80
-//   location <-1, 2.5, -4>
-//   look_at <4, 3.5, 4>
-// }
 
 cylinder {
   0, 10*x, 0.03
@@ -61,12 +45,48 @@ cylinder {
   <-8,8>,
   <-8,-8>,
   <8,-8>
-  pigment {
-    checker Black White scale .5
+  texture {
+    pigment { wood }
+    finish { phong 1 }
   }
 }
 
 object { ground }
+
+#declare lamp = union {
+  cylinder {
+    <0, 0, 0>
+    <0, 0.1, 0>
+    1
+  }
+  cylinder {
+    <0, 0.1, 0>
+    <0, 3, 0>,
+    0.15
+  }
+  box {
+    <-1, 3, 0.2>, <3.4, 3.05, -0.2>
+    rotate <0, 0, 5>
+  }
+  light_source {
+    <2, 3, 0> 
+    color Yellow
+  }
+  sphere_sweep{
+    cubic_spline, 5 
+        <-2, 5, 0>, 0.05
+        <-1, 2.9, 0>, 0.05
+        <-1.5, 2.4, 0>, 0.05
+        <-0, 2.8, 0>, 0.05
+        <-0, 2.8, 0>, 0.05
+    pigment { rgb<255 / 255, 95 / 255, 23 / 255> }
+  }
+  pigment { White }
+  rotate <0, -30, 0>
+  translate <0, 0, -2>
+}
+
+object { lamp }
 
 #declare book_cover = union {
   box {
@@ -97,7 +117,7 @@ object { ground }
     }
     rotate <0, 0, 195>
   }
-  translate <0.7, 0, -0.2>
+  translate <2, 0, -0.2>
 }
 
 #macro make_page(ang)
@@ -108,7 +128,7 @@ object { ground }
       White
     }
     rotate <0, 0, ang>
-    translate <0.7, 0.05, -0.2>
+    translate <2, 0.05, -0.2>
   }
 #end
 
@@ -125,7 +145,7 @@ object {
   book_cover
 }
 
-union {
+#declare cup = union {
   lathe {
     cubic_spline
     9
@@ -137,7 +157,6 @@ union {
           [0 Red]
           [2.15 Blue]
         }
-      
     }
     finish {
       reflection {
@@ -152,6 +171,8 @@ union {
     <0, 1.5>, <1.85, 1.5>, <1.85, 1.6>, <0, 1.6>
     pigment {rgb<166 / 255, 217 / 255, 255 / 255> }
   }
-  scale 0.4
-  translate <-1.5, 0, -0.5>
+  scale 0.3
+  translate <1.5, 0, -2.5>
 }
+
+object { cup }
