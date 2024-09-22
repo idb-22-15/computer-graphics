@@ -1,0 +1,118 @@
+#include "colors.inc"    
+
+background{ 
+  rgb<0.2,0.2,0.4>
+}
+
+light_source {
+  <10,30,-3> 
+  color White
+}
+
+sky_sphere {
+  pigment {
+    gradient y
+    color_map {
+      [0 color White]
+      [1 color Blue]
+    }
+  }
+}
+
+// camera 1
+
+camera {
+  angle 80
+  location <2, 1, -2>
+  look_at 0
+}
+
+// camera 2
+
+// camera {
+//   angle 80
+//   location <-1, 2.5, -4>
+//   look_at <4, 3.5, 4>
+// }
+
+cylinder {
+  0, 10*x, 0.03
+  pigment { Red }
+}
+cylinder {
+  0, 10*y, 0.03
+  pigment { Green }
+}
+cylinder {
+  0, 10*z, 0.03
+  pigment { Blue }
+}  
+
+#declare ground = prism {
+  -1,0, 4
+  <8,8>,
+  <-8,8>,
+  <-8,-8>,
+  <8,-8>
+  pigment {
+    checker Black White scale .5
+  }
+}
+
+object { ground }
+
+#declare book_cover = union {
+  box {
+    <-1, -0.05, 1>
+    <0, 0.05, -1>
+    pigment {
+      Brown
+    }
+    finish {
+      reflection {
+        0.01
+        metallic 1
+      }
+    }
+    rotate <0, 0, -15> // <x°, y°, z°>
+  }
+  box {
+    <-1, -0.05, 1>
+    <0, 0.05, -1>
+    pigment {
+      Brown
+    }
+    finish {
+      reflection {
+        0.01
+        metallic 1
+      }
+    }
+    rotate <0, 0, 195> // <x°, y°, z°>
+  }
+}
+
+// #macro make_page(angle)
+//   box {
+//      <-0.9, -0.05, 0.9>
+//     <0, 0.05, -0.9>
+//     pigment {
+//       White
+//     }
+//     rotate <0, 0, angle>
+//   }
+// #end
+
+  box {
+     <-0.9, -0.05, 0.9>
+    <0, 0.05, -0.9>
+    pigment {
+      White
+    }
+    rotate <0, 0, 17>
+  }
+
+object {
+  book_cover
+  make_page(20)
+ }
