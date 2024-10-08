@@ -1,92 +1,84 @@
-#include "colors.inc"    
-
+// Настройки камеры
 camera {
-  angle 80
-  location <3, 2, -3>
-  look_at 0
-  scale 1.5
+  location <8, 2, -10>   // Позиция камеры
+  look_at <0, 1, 0>      // Точка, на которую направлена камера
 }
 
-background{ 
-  rgb<0.2,0.2,0.4>
-}
-
+// Освещение сцены
 light_source {
-  <10,30,-3> 
-  color White
+  <0, 10, -10>           // Позиция источника света
+  color rgb <1, 1, 1>    // Цвет света (белый)
 }
 
-// Basic isosurface
-isosurface {
-  function { x*x + y*y + z*z - 1 }
-  contained_by { box { -1.5, 1.5 } }
-  max_gradient 5
-  accuracy 0.001
-  pigment { color Red }
-}
-
-// Isosurface with different settings
-isosurface {
-  function { sin(x*3) + sin(y*3) + sin(z*3) }
-  contained_by { box { -2, 2 } }
-  max_gradient 3
-  accuracy 0.01
-  pigment { color Green }
-  translate <3, 0, 0>
-}
-
-// Isosurface with space transformation
-isosurface {
-  function { x*x + y*y + z*z - 1 }
-  contained_by { box { -1.5, 1.5 } }
-  max_gradient 5
-  accuracy 0.001
-  pigment { color Blue }
-  scale <1, 0.5, 1>
-  rotate <0, 45, 0>
-  translate <-3, 2, 0>
-}
-
-// Isosurface composed of multiple operations
-isosurface {
-  function {
-    f1 = x*x + y*y + z*z - 1
-    f2 = (x-1)*(x-1) + (y-1)*(y-1) + (z-1)*(z-1) - 0.5
-    min(f1, f2)
+// Параметры текстуры для отражающего глянца
+#declare Fish_Texture = texture {
+  pigment { color rgb <0.5, 0.7, 1> }  // Голубоватый цвет тела рыбы
+  finish {
+    reflection 0.3    // Отражение
+    specular 0.8      // Глянец
+    ambient 0.2       // Окружающий свет
   }
-  contained_by { box { -2, 2 } }
-  max_gradient 5
-  accuracy 0.001
-  pigment { color Yellow }
-  translate <0, -2, 0>
 }
 
-// Keep the existing objects
+// Тело рыбы (цилиндрическая форма)
 cylinder {
-  0, 10*x, 0.03
-  pigment { Red }
+  <0, 1, 0>, <0, 1, 3>, 1   // Позиция и размер тела
+  texture { Fish_Texture }   // Применяем текстуру
 }
 
-cylinder {
-  0, 10*y, 0.03
-  pigment { Green }
+// Голова рыбы (сфера для плавного перехода)
+sphere {
+  <0, 1, -0.5>, 1  // Голова (меньший радиус для естественного перехода)
+  texture { Fish_Texture }
 }
 
-cylinder {
-  0, 10*z, 0.03
-  pigment { Blue }
-}  
+// Хвост рыбы (веерообразный, как конус)
+cone {
+  <0, 1, 3>, 0.1,    // Начальная точка (сужающаяся)
+  <0, 1, 4>, 1.5     // Конечная точка (широкая часть)
+  texture { Fish_Texture }
+}
 
-#declare ground = prism {
-  -1,0, 4
-  <8,8>,
-  <-8,8>,
-  <-8,-8>,
-  <8,-8>
+// Глаза рыбы (сферы)
+sphere {
+  <0.7, 1.5, -0.2>, 0.2  // Позиция правого глаза
   texture {
-    pigment { wood }
-    finish { phong 1 }
+    pigment { color rgb <0, 0, 0> }  // Черный цвет глаз
   }
 }
 
-object { ground }
+sphere {
+  <-0.7, 1.5, -0.2>, 0.2  // Позиция левого глаза
+  texture {
+    pigment { color rgb <0, 0, 0> }
+  }
+}
+
+// Верхний плавник (простой треугольник)
+// Исправлено положение для прикрепления к телу рыбы
+triangle {
+  <0, 2, 1>, <0.5, 2.5, 1.5>, <-0.5, 2.5, 1.5>
+  texture { Fish_Texture }
+}
+
+// Боковые плавники (простые треугольники)
+triangle {
+  <1, 1, 1>, <1.5, 1.5, 1.5>, <1.5, 0.5, 1.5>
+  texture { Fish_Texture }
+}
+
+triangle {
+  <-1, 1, 1>, <-1.5, 1.5, 1.5>, <-1.5, 0.5, 1.5>
+  texture { Fish_Texture }
+}
+
+// Плоскость воды
+plane {
+  y, -2
+  texture {
+    pigment { color rgb <0.2, 0.4, 1> }  // Цвет воды
+    finish {
+      reflection 0.5    // Отражение на поверхности воды
+    }
+  }
+}
