@@ -69,6 +69,7 @@ object {
   translate <0, 3.2, 0>
 }
 
+// Руки Евы
 cone {
   <1, 1.0, 0>, 0.4
   <2.0, -0.5, 0>, 0.15
@@ -95,4 +96,38 @@ cone {
   }
   rotate <0, 0, -15>
   translate <0.1, 0.4, 0>
+}
+
+// Лицо Евы (эллипс)
+sphere {
+  <0, 2.3, -0.6>, 0.5  // Центр и радиус эллипса для лица <0
+  scale <2.5, 1, 1>  // Масштаб для создания эллиптической формы
+  texture {
+    pigment { color rgb <10 / 255 , 20 / 255, 30 / 255> }  // Темное пятно (черный)
+    finish {
+      ambient 0.2
+    }
+  }
+}
+
+
+
+sphere {
+  <-0.7, 2.4, -1>, 0.1
+  texture {
+    pigment { color rgb <0.2, 0.8, 1> }
+    finish {
+      ambient 0.8
+    }
+  }
+}
+
+sphere {
+  <1, 2.4, -1>, 0.1
+  texture {
+    pigment { color rgb <0.2, 0.8, 1> }
+    finish {
+      ambient 0.8
+    }
+  }
 }
