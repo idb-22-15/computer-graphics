@@ -11,20 +11,21 @@ light_source {
 plane {
   y, -2
   texture {
-    pigment { color rgb <0.2, 0.4, 1> }  // Цвет воды
+    pigment { color rgb <0.2, 0.4, 1> }
     finish {
-      reflection 0.1    // Отражение воды
+      reflection 0.1
     }
   }
 }
 
-// Тело Евы (капля)
-#declare Drop_Shape =
+#declare BodyF = 
+function {
+  pow(x, 2) + pow(y, 2) + pow(z, 2) - 1.8
+}
+
+#declare Body =
 isosurface {
-  function {
-    // Уравнение для капли
-    pow(x, 2) + pow((y - 1) / 1.2, 2) + pow(z, 2) - 2
-  }
+  function { BodyF(x, (y - 1.5) / 1.7, z) }
   accuracy 0.001
   max_gradient 10
   contained_by { box {-2, 2} }
@@ -39,7 +40,7 @@ isosurface {
 }
 
 object { 
-  Drop_Shape
+  Body
   translate <0, -0.5, 0>
 }
 
@@ -111,7 +112,6 @@ sphere {
 }
 
 
-
 sphere {
   <-0.7, 2.4, -1>, 0.1
   texture {
@@ -131,3 +131,4 @@ sphere {
     }
   }
 }
+
