@@ -129,11 +129,11 @@ union {
 }
 
 // Ева
-object { Head }
-object { Face }
-object { Body }
-object { Arms }
-object { Eyes }
+// object { Head }
+// object { Face }
+// object { Body }
+// object { Arms }
+// object { Eyes }
 
 
 #declare F1 =
@@ -162,4 +162,4 @@ isosurface {
 }
 
 // Капля
-// object { Drop }
+object { Drop }
