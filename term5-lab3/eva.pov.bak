@@ -1,0 +1,55 @@
+// Eva in POV-Ray using isosurface
+#version 3.7;
+
+global_settings {
+  assumed_gamma 1.0
+}
+
+camera {
+  location <0, 2, -5>
+  look_at <0, 1, 0>
+}
+
+light_source {
+  <10, 10, -10>
+  color rgb <1, 1, 1>
+}
+
+background {
+  color rgb <0.1, 0.1, 0.1>
+}
+
+#declare Eva_Shape =
+  isosurface {
+    function {
+      // Функция, описывающая форму Евы
+      (pow(x, 2) + pow(y, 2) + pow(z, 1.5) - 1) * 
+      (pow(y - 0.5, 2) - 0.2)
+    }
+    accuracy 0.001
+    max_gradient 2
+    contained_by { box {-2, 2} }
+  }
+
+mesh {
+  triangle {
+    0, 1, 2,
+    texture {
+      pigment { color rgb <0.8, 0.9, 1> }
+      finish {
+          reflection 0.2   // Небольшое отражение
+          specular 0.8     // Глянец
+          ambient 0.2      // Окружающий свет
+        }
+    }
+  }
+  object { Eva_Shape }
+}
+
+#declare Eva_Transform =
+  transform {
+    translate <0, 0, 0>
+    scale <1, 1, 1>
+  }
+
+object { Eva_Shape texture { pigment { color rgb <1, 1, 1> }} }

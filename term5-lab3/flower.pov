@@ -1,7 +1,7 @@
 // Настройки камеры
 camera {
   location <0, 5, -10>  // Позиция камеры
-  look_at <0, 1, 0>     // Точка, на которую направлена камера
+  look_at <0, 0, 0>     // Точка, на которую направлена камера
 }
 
 // Освещение
@@ -13,7 +13,7 @@ light_source {
 // Текстура лепестков
 #declare Petal_Texture = texture {
   pigment { color rgb <1, 0.3, 0.5> } // Розовый цвет лепестков
-  finish { ambient 0.2 diffuse 0.8 }
+  finish { ambient 0.2 diffuse 0.8 reflection 0.3 }
 }
 
 // Текстура стебля
@@ -23,50 +23,19 @@ light_source {
 }
 
 // Функция для лепестка
-#declare Petal_Function = function {
-  // Создание лепестка в форме объема
-  pow(x, 2) + pow(y - 0.5, 2) + pow(z, 2) - 0.25
+#declare Petal_Function = function (x, y, z) {
+  // Создание лепестка в форме эллипса
+  pow(x, 2) + pow(y - 0.5, 2) + pow(z, 2) - 0.15*pow(sin(2 * 3.14 * (x + 1)), 2) - 0.5
 };
 
-// Лепесток 1
+// Лепестки
 isosurface {
-  function { 
+  function {
     max(
-      Petal_Function,
-      pow(x - 0.5, 2) + pow(z, 2) - 0.25  // Лепесток 1
-    )
-  }
-  texture { Petal_Texture }
-}
-
-// Лепесток 2
-isosurface {
-  function { 
-    max(
-      Petal_Function,
-      pow(x + 0.5, 2) + pow(z, 2) - 0.25  // Лепесток 2
-    )
-  }
-  texture { Petal_Texture }
-}
-
-// Лепесток 3
-isosurface {
-  function { 
-    max(
-      Petal_Function,
-      pow(z - 0.5, 2) + pow(y - 0.5, 2) - 0.25  // Лепесток 3
-    )
-  }
-  texture { Petal_Texture }
-}
-
-// Лепесток 4
-isosurface {
-  function { 
-    max(
-      Petal_Function,
-      pow(z + 0.5, 2) + pow(y - 0.5, 2) - 0.25  // Лепесток 4
+      Petal_Function(x - 1, y, z),  // Лепесток 1 смещен влево
+      Petal_Function(x + 1, y, z),  // Лепесток 2 смещен вправо
+      Petal_Function(x, y, z - 1),   // Лепесток 3 смещен назад
+      Petal_Function(x, y, z + 1)    // Лепесток 4 смещен вперед
     )
   }
   texture { Petal_Texture }
